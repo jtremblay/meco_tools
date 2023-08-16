@@ -1,2 +1,2 @@
-# caf_tools
+# meco_tools
 Bioinformatics tools for microbial ecology
