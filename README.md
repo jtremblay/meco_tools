@@ -1,2 +1,2 @@
 # meco_tools
-Bioinformatics tools for microbial ecology
+General purpose bioinformatics tools geared for microbial ecology
