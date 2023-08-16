@@ -1,0 +1,136 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Iterator::FastaDb;
+use Iterator::FastqDb;
+
+my $usage=<<'ENDHERE';
+NAME:
+generateConsensusTaxonomy.pl
+
+PURPOSE:
+Implementation of the methodology described in CAT paper - https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1817-x
+
+INPUT:
+--infile_taxonomy <string>           : diamond blastp results against nt
+--infile_link_genes_contigs <string> : link between genes and contig. contig_id\tgene_id
+
+OUTPUT:
+STDOUT <string>                      : consensus taxonomy with score for each contig
+--out_stats <string>                 : comprehensive statistics spreadsheet. 
+
+NOTES:
+
+BUGS/LIMITATIONS:
+ 
+AUTHOR/SUPPORT:
+National Research Council Canada - Genomics and Microbiomes
+Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+
+ENDHERE
+
+## OPTIONS
+my ($help, $infile_taxonomy, $infile_link_genes_contigs, $out_stats);
+my $verbose = 0;
+
+GetOptions(
+   'infile_taxonomy=s'           => \$infile_taxonomy,
+   'infile_link_genes_contigs=s' => \$infile_link_genes_contigs,
+   'out_stats=s'                 => \$out_stats,
+   'verbose'                     => \$verbose,
+   'help'                        => \$help
+);
+if ($help) { print $usage; exit; }
+
+## MAIN
+my %hash_link;
+open(IN, "<".$infile_link_genes_contigs) or die "Can't open $infile_link_genes_contigs\n";
+while(<IN>){
+    chomp;
+    my @row = split(/\t/, $_);
+    $hash_link{$row[0]} = $row[1];
+}
+close(IN)
+print STDERR "Completed generating contig_id->gene_id link hash.\n";
+
+my %hash;
+my $last_gene_id = "";
+my $last_contig_id = "";
+my $top_bitscore;
+my $curr_distance;
+my @kingdom, @phylum, @class, @order, @family, @genus, @species;
+open(IN, "<".$infile_taxonomy) or die "Can't open $infile_taxonomy\n";
+# Loop through taxonomy file. Consider hits ranging within 50% of top hit bit-score. Hits are in order of bitscores. So
+# assume first hit has the highest bitscore.
+while(<IN>){
+    chomp;
+    my @row = split(/\t/, $_);
+    my $curr_gene_id = $row[0];
+    my $kingdom = $row[2];
+    my $phylum  = $row[3];
+    my $class   = $row[4];
+    my $order   = $row[5];
+    my $family  = $row[6];
+    my $genus   = $row[7];
+    my $species = $row[8];
+    my $bitscore = $row[11];
+    my $curr_contig_id = $row[12]; ## Double check where contig_id is located...
+
+    if($curr_contig_id eq $last_contig_id){
+        #continue current contig...
+
+        if($curr_gene_id eq $last_gene_id){
+            #continue current gene...    
+
+        }else{
+            #Complete current gene...
+            #Find LCA (Lowest Common Ancestor). If no common ancestor or all equal hits
+            
+            
+            #And start new gene...
+            $last_gene_id = $curr_gene_id;
+            $top_bitscore = $bitscore;
+            $curr_distance = ($bitscore/$top_bitscore) * 100
+            if($curr_distance < 10){ #register for vote.
+                $hash{$curr_contig_id}{$curr_gene_id}{kingdom}{$kingdom}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{phylum}{$phylum}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{class}{$class}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{order}{$order}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{family}{$family}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{order}{$order}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{genus}{$genus}++;
+                $hash{$curr_contig_id}{$curr_gene_id}{species}{$species}++;
+            
+            }else{
+                print STDERR "Reject: $curr_distance lower than 10%\n";
+            }
+        }
+    }else{
+        # Complete current contig. Proceed to vote.
+        
+        #start new contig...
+        #If starting new contig, means new gene too.
+        $last_contig_id = $curr_contig_id;
+        $last_gene_id = $curr_gene_id
+        $top_bitscore = $bitscore;
+        $curr_distance = ($bitscore/$top_bitscore) * 100
+        %hash = ();
+        if($curr_distance < 10){ #register for vote.
+            $hash{$curr_contig_id}{$curr_gene_id}{kingdom}{$kingdom}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{phylum}{$phylum}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{class}{$class}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{order}{$order}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{family}{$family}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{order}{$order}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{genus}{$genus}++;
+            $hash{$curr_contig_id}{$curr_gene_id}{species}{$species}++;
+            
+        }else{
+            print STDERR "Reject: $curr_distance lower than 10%\n";
+        }
+    }
+}
+

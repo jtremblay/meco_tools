@@ -1,0 +1,366 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Iterator::FastaDb;
+use Iterator::FastqDb;
+use Cwd 'abs_path';
+use File::Basename;
+
+my $usage=<<'ENDHERE';
+NAME:
+exportDataForR.pl
+
+PURPOSE:
+Generate a tar ball containing all key files needed for 
+downstream analysis done with R.
+
+INPUT:
+--indir <string>      : Directory
+--type <string>       : either 'amplicons' or 'shotgun'
+--gz                  : if flag set, will look for .gz. much of the files are
+                        gzipped if cleanup.pl is run before.
+--reads_type <string> : Default = reads_12. Can be reads_1 or reads_12
+--prefix <string>     : Defaut = "". add prefix to archive name.
+--bins <string>       : Default = "false". If true, will generate symlinks for bins results.
+--table_prefix        : feature_table or otu_table
+
+OUTPUT:
+
+NOTES:
+Just cd to a root metagenome project directory and execute like this: 
+exportDataForR.pl --indir ./
+
+BUGS/LIMITATIONS:
+ 
+AUTHOR/SUPPORT:
+National Research Council - Biomonitoring
+Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+
+ENDHERE
+
+## OPTIONS
+my ($help, $indir, $type, $gz, $reads_type, $prefix, $bins, $table_prefix);
+my $verbose = 0;
+
+GetOptions(
+   'indir=s'        => \$indir,
+   'type=s'         => \$type,
+   'gz'             => \$gz,
+   'bins=s'         => \$bins,
+   'reads_type=s'   => \$reads_type,
+   'prefix=s'       => \$prefix,
+   'table_prefix=s' => \$table_prefix,
+   'verbose'        => \$verbose,
+   'help'           => \$help
+);
+if ($help) { print $usage; exit; }
+
+## MAIN
+sub findNonRecursive(){
+	my $currIndir = "./binning/metabat/parsed_bins";
+	my $currIndir2 = $indir;
+	my $extension = "fa";
+    my @filenames = glob($currIndir."/*.".$extension);
+    foreach my $filename (@filenames){
+        print STDERR $filename."\n";    
+        if (-e $filename) {
+            my $basename = basename($filename);
+            next if($basename  eq "all_bins.fa");
+            #print STDERR substr($basename, -(length($extension)+1))."\n";
+    
+           if(substr($basename, -(length($extension)+1)) eq ".".$extension){
+                #print STDERR "Parsing ".$filename." into single fasta file archive...\n";
+                #my $outfile = "$outdir/$basename";
+                #print STDERR $outfile."\n";
+   				my $symlink_exists = eval { symlink("../../../binning/metabat/parsed_bins/$basename", "$currIndir2/export/bins/fasta/$basename"); 1 };
+            }
+        }
+    }   
+}
+
+
+if(!defined($reads_type)){
+    $reads_type = "reads_12";
+}else{
+    die "--reads_type has to be 'reads_12' or 'reads_1'\n" unless($reads_type eq "reads_12" || $reads_type eq "reads_1" || $reads_type eq "reads_2");
+}
+if($prefix){
+    $prefix = "_".$prefix;
+}else{
+    $prefix = "";
+}
+
+if(!defined($table_prefix)){
+    $table_prefix = "feature_table";
+}
+
+my $symlink_exists;
+
+my $indir2 = $indir;
+if($type eq "shotgun"){
+
+   # First create symlinks.
+   $indir = abs_path($indir);
+   system("mkdir -p $indir/export/");
+   system("mkdir -p $indir/export/consensus");
+   system("mkdir -p $indir/export/bins/fasta");
+   system("mkdir -p $indir/export/genes");
+   system("mkdir -p $indir/export/alphadiv");
+   if($gz){
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_bins/".$table_prefix."_bacteriaArchaea.tsv.gz",               "$indir2/export/bins/".$table_prefix."_bacteriaArchaea.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/".$table_prefix."_normalized_bacteriaArchaea.tsv.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/taxonomy.tsv.gz",                             "$indir2/export/consensus/taxonomy.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/annotations.tsv.gz",                                           "$indir2/export/annotations.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/kegg_matrix_modules.tsv.gz",                                   "$indir2/export/kegg_matrix_modules.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/kegg_modules.tsv.gz",                                          "$indir2/export/kegg_modules.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/gene_abundance/merged_gene_abundance_cpm.tsv.gz",                              "$indir2/export/genes/merged_gene_abundance_cpm.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/binning/metabat/parsed_bins/link.tsv.gz",                                      "$indir2/export/bins/link.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/mapping_file.tsv",                                                             "$indir2/export/mapping_file.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/contigs_abundance/qc_mapping_stats.tsv",                                       "$indir2/export/qc_mapping_stats.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/assembly/ray_assembly_stats.txt",                                              "$indir2/export/ray_assembly_stats.txt"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized.txt.gz",                             "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized.txt.gz"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized_coords.tsv.gz",                      "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized_coords.tsv.gz"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea.txt.gz",             "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea.txt.gz"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea_coords.tsv.gz",      "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea_coords.tsv.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/betadiv",                                                                      "$indir2/export/betadiv"); 1 };
+      $symlink_exists = eval { symlink("$indir/alphadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea/collated",           "$indir2/export/alphadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea"); 1 };
+      $symlink_exists = eval { symlink("$indir/alphadiv/bray_curtis_".$table_prefix."_normalized/collated",                           "$indir2/export/alphadiv/bray_curtis_".$table_prefix."_normalized"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L1.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L1.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L2.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L2.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L3.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L3.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L4.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L4.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L5.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L5.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L6.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L6.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L7.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L7.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L1.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L1.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L2.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L2.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L3.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L3.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L4.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L4.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L5.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L5.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L6.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L6.txt.gz"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L7.txt.gz", "$indir2/export/consensus/".$table_prefix."_normalized_L7.txt.gz"); 1 };
+   }else{
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_bins/".$table_prefix."_normalized.tsv",                        "$indir2/export/bins/".$table_prefix."_normalized.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_bins/".$table_prefix.".tsv",                                   "$indir2/export/bins/".$table_prefix.".tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/".$table_prefix."_normalized_bacteriaArchaea.tsv",   "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/".$table_prefix."_bacteriaArchaea.tsv",              "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/".$table_prefix."_normalized.tsv",                   "$indir2/export/consensus/".$table_prefix."_normalized.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/".$table_prefix.".tsv",                              "$indir2/export/consensus/".$table_prefix.".tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/taxonomy.tsv",                               "$indir2/export/consensus/taxonomy.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/annotations.tsv",                                               "$indir2/export/annotations.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/kegg_matrix_modules.tsv",                                       "$indir2/export/kegg_matrix_modules.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/kegg_modules.tsv",                                              "$indir2/export/kegg_modules.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/gene_abundance/merged_gene_abundance_cpm.tsv",                              "$indir2/export/genes/merged_gene_abundance_cpm.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/gene_abundance/merged_gene_abundance.tsv",                                  "$indir2/export/genes/merged_gene_abundance.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/contigs_abundance/merged_contigs_abundance_cpm.tsv",                        "$indir2/export/contigs/merged_contigs_abundance_cpm.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/contigs_abundance/merged_contigs_abundance.tsv",                            "$indir2/export/contigs/merged_contigs_abundance.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/binning/metabat/parsed_bins/link.tsv",                                      "$indir2/export/bins/link.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/mapping_file.tsv",                                                          "$indir2/export/mapping_file.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/contigs_abundance/qc_mapping_stats.tsv",                                    "$indir2/export/qc_mapping_stats.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/assembly/assembly_stats.txt",                                               "$indir2/export/assembly_stats.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/assembly/Contigs.fasta",                                                    "$indir2/export/Contigs.fasta"); 1 };
+      $symlink_exists = eval { symlink("$indir/gene_prediciton/Contigs_renamed.fasta",                                     "$indir2/export/genes/genes.fna"); 1 };
+      $symlink_exists = eval { symlink("$indir/gene_prediciton/Contigs_renamed.faa",                                       "$indir2/export/genes/genes.faa"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized.txt",                             "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized.txt"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized_coords.tsv",                      "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized_coords.tsv"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea.txt",             "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea.txt"); 1 };
+      #$symlink_exists = eval { symlink("$indir/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea_coords.tsv",      "$indir2/export/betadiv/bray_curtis_".$table_prefix."_normalized_bacteriaArchaea_coords.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/betadiv",                                                                   "$indir2/export/betadiv"); 1 };
+      # $symlink_exists = eval { symlink("$indir/alphadiv/all/collated",                                                   "$indir2/export/alphadiv/all"); 1 };
+      #$symlink_exists = eval { symlink("$indir/alphadiv/bacteria_archaea/collated",                                       "$indir2/export/alphadiv/bacteria_archaea"); 1 };
+      
+      ####### RELATIVE
+      # Normalized
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L1.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L2.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L3.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L4.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L5.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L6.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_normalized_bacteriaArchaea_L7.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L7.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L1.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L2.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L3.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L4.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L5.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L6.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_normalized_L7.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L7.txt"); 1 };
+      
+      # Raw (non-normalized)
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L1.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L2.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L3.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L4.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L5.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L6.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/absolute/".$table_prefix."_bacteriaArchaea_L7.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L7.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L1.txt",                             "$indir2/export/consensus/".$table_prefix."_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L2.txt",                             "$indir2/export/consensus/".$table_prefix."_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L3.txt",                             "$indir2/export/consensus/".$table_prefix."_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L4.txt",                             "$indir2/export/consensus/".$table_prefix."_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L5.txt",                             "$indir2/export/consensus/".$table_prefix."_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L6.txt",                             "$indir2/export/consensus/".$table_prefix."_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/absolute/".$table_prefix."_L7.txt",                             "$indir2/export/consensus/".$table_prefix."_L7.txt"); 1 };
+
+      # ABSOLUTE
+      # Normalized 
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L1.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L2.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L3.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L4.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L5.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L6.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_normalized_bacteriaArchaea_L7.txt", "$indir2/export/consensus/".$table_prefix."_normalized_bacteriaArchaea_L7.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L1.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L2.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L3.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L4.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L5.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L6.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_normalized_L7.txt",                             "$indir2/export/consensus/".$table_prefix."_normalized_L7.txt"); 1 };
+      
+      # Raw (non-Normalized)
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L1.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L2.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L3.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L4.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L5.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L6.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/bacteriaArchaea/relative/".$table_prefix."_bacteriaArchaea_L7.txt", "$indir2/export/consensus/".$table_prefix."_bacteriaArchaea_L7.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L1.txt",                             "$indir2/export/consensus/".$table_prefix."_L1.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L2.txt",                             "$indir2/export/consensus/".$table_prefix."_L2.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L3.txt",                             "$indir2/export/consensus/".$table_prefix."_L3.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L4.txt",                             "$indir2/export/consensus/".$table_prefix."_L4.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L5.txt",                             "$indir2/export/consensus/".$table_prefix."_L5.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L6.txt",                             "$indir2/export/consensus/".$table_prefix."_L6.txt"); 1 };
+      $symlink_exists = eval { symlink("$indir/annotations/taxonomy_consensus/all/relative/".$table_prefix."_L7.txt",                             "$indir2/export/consensus/".$table_prefix."_L7.txt"); 1 };
+   }
+   if($bins eq "true"){
+      $symlink_exists = eval { symlink("$indir/binning/metabat/parsed_bins/link.tsv",                                      "$indir2/export/bins/link.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/binning/metabat/parsed_bins.tsv",                                           "$indir2/export/bins/parsed_bins.tsv"); 1 };
+      $symlink_exists = eval { symlink("$indir/binning/metabat/parsed_bins/out_checkm.txt",                                "$indir2/export/bins/out_checkm.txt"); 1 };
+
+      findNonRecursive();
+   
+   
+   }
+   #my @array = (
+   #   "$indir2/export/bins/otu_table_bacteriaArchaea.tsv",
+   #   "$indir2/export/contigs/otu_table_normalized_bacteriaArchaea.tsv",
+   #   "$indir2/export/contigs/taxonomy.tsv",
+   #   "$indir2/export/annotations.tsv",
+   #   "$indir2/export/genes/merged_gene_abundance_cpm.tsv",
+   #   "$indir2/export/bins/link.tsv",
+   #   "$indir2/export/mapping_file.tsv",
+   #   "$indir2/export/contigs/otu_table_normalized_bacteriaArchaea_L6.txt",
+   #   "$indir2/export/contigs/otu_table_normalized_bacteriaArchaea_L7.txt"
+   #);
+
+   system("tar -zchvf ./export$prefix.tar.gz ./export/");
+
+}elsif($type eq "amplicons"){
+   # First create symlinks.
+   my $indir2 = $indir;
+   $indir = abs_path($indir);
+   system("mkdir -p $indir/export/");
+   system("mkdir -p $indir/export/betadiv");
+   system("mkdir -p $indir/export/blast");
+   system("mkdir -p $indir/export/alphadiv");
+   system("mkdir -p $indir/export/taxonomy");
+   system("mkdir -p $indir/export/$table_prefix"."s");
+   #system("mkdir -p $indir/export/otu_tables");
+   system("mkdir -p $indir/export/picrust");
+   system("mkdir -p $indir/export/qscores");
+   system("mkdir -p $indir/export/tree");
+   system("mkdir -p $indir/export/rdp");
+   if(-e "$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L7.txt"){
+      $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L7.txt",       "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L7.txt"); 1 };
+   }
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L6.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L6.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L5.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L5.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L4.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L4.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L3.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L3.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L2.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L2.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_normalized_L1.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_L1.txt"); 1 };
+   
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_rarefied_L6.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_L6.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_rarefied_L5.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_L5.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_rarefied_L4.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_L4.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_rarefied_L3.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_L3.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_rarefied_L2.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_L2.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/absolute/".$table_prefix."_final_rarefied_L1.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_L1.txt"); 1 };
+   
+   if(-e "$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L7.txt"){
+      $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L7.txt",       "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L7.txt"); 1 };
+   }
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L6.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L6.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L5.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L5.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L4.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L4.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L3.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L3.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L2.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L2.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_normalized_L1.txt",          "$indir2/export/taxonomy/".$table_prefix."_final_normalized_rel_L1.txt"); 1 };
+   
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_rarefied_L6.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_rel_L6.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_rarefied_L5.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_rel_L5.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_rarefied_L4.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_rel_L4.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_rarefied_L3.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_rel_L3.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_rarefied_L2.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_rel_L2.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/tax_summary/relative/".$table_prefix."_final_rarefied_L1.txt",            "$indir2/export/taxonomy/".$table_prefix."_final_rarefied_rel_L1.txt"); 1 };
+   
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/weighted_unifrac_".$table_prefix."_final_normalized.txt",        "$indir2/export/betadiv/weighted_unifrac_".$table_prefix."_final_normalized.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/weighted_unifrac_".$table_prefix."_final_normalized_coords.tsv", "$indir2/export/betadiv/weighted_unifrac_".$table_prefix."_final_normalized_coords.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/bray_curtis_".$table_prefix."_final_normalized.txt",             "$indir2/export/betadiv/bray_curtis_".$table_prefix."_final_normalized.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/bray_curtis_".$table_prefix."_final_normalized_coords.tsv",      "$indir2/export/betadiv/bray_curtis_".$table_prefix."_final_normalized_coords.tsv"); 1 };
+
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/weighted_unifrac_".$table_prefix."_final_rarefied.txt",          "$indir2/export/betadiv/weighted_unifrac_".$table_prefix."_final_rarefied.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/weighted_unifrac_".$table_prefix."_final_rarefied_coords.tsv",   "$indir2/export/betadiv/weighted_unifrac_".$table_prefix."_final_rarefied_coords.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/bray_curtis_".$table_prefix."_final_rarefied.txt",               "$indir2/export/betadiv/bray_curtis_".$table_prefix."_final_rarefied.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/bray_curtis_".$table_prefix."_final_rarefied_coords.tsv",        "$indir2/export/betadiv/bray_curtis_".$table_prefix."_final_rarefied_coords.tsv"); 1 };
+
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/plots/3d_weighted_unifrac",                                      "$indir2/export/betadiv/3d_weighted_unifrac"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/beta_div/plots/3d_bray_curtis",                                           "$indir2/export/betadiv/3d_bray_curtis"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_final_normalized.tsv",               "$indir2/export/".$table_prefix."s/".$table_prefix."_final_normalized.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_final_normalized.biom",              "$indir2/export/".$table_prefix."s/".$table_prefix."_final_normalized.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_final_rarefied.tsv",                 "$indir2/export/".$table_prefix."s/".$table_prefix."_final_rarefied.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_final_rarefied.biom",                "$indir2/export/".$table_prefix."s/".$table_prefix."_final_rarefied.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_filtered.tsv",                       "$indir2/export/".$table_prefix."s/".$table_prefix."_filtered.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_filtered_normalized.tsv",            "$indir2/export/".$table_prefix."s/".$table_prefix."_filtered_normalized.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_filtered.biom",                      "$indir2/export/".$table_prefix."s/".$table_prefix."_filtered.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_filtered_normalized.biom",           "$indir2/export/".$table_prefix."s/".$table_prefix."_filtered_normalized.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_filtered_rarefied.tsv",              "$indir2/export/".$table_prefix."s/".$table_prefix."_filtered_rarefied.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_filtered_rarefied.biom",             "$indir2/export/".$table_prefix."s/".$table_prefix."_filtered_rarefied.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/features.fasta",                                       "$indir2/export/".$table_prefix."s/features.fasta"); 1 };
+
+   $symlink_exists = eval { symlink("$indir/mapping_file.tsv",                                                                                    "$indir2/export/mapping_file.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/alpha_div/collated/observed_species.txt",                                  "$indir2/export/alphadiv/observed_species.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/alpha_div/collated/shannon.txt",                                           "$indir2/export/alphadiv/shannon.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/alpha_div/collated/simpson.txt",                                           "$indir2/export/alphadiv/simpson.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/alpha_div/collated/chao1.txt",                                             "$indir2/export/alphadiv/chao1.txt"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/countReport.tsv",                                                          "$indir2/export/countReport.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/blast/blast.out.besthit",                                                  "$indir2/export/blast/blast.out.besthit"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/blast/blast.out",                                                          "$indir2/export/blast/blast.out"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/rdp/rdp.tsv",                                                              "$indir2/export/rdp/rdp.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/fasttree/tree.fasttree",                                                   "$indir2/export/tree/tree.fasttree"); 1 };
+
+   # Picrust
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes.tsv",                                  "$indir2/export/picrust/".$table_prefix."_greengenes.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_precalculated.tsv",                    "$indir2/export/picrust/".$table_prefix."_greengenes_precalculated.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups_nbcn_picrust_KO_sum.tsv",       "$indir2/export/picrust/".$table_prefix."_greengenes_nodups_nbcn_picrust_KO_sum.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups_nbcn_picrust_KO_sum.biom",      "$indir2/export/picrust/".$table_prefix."_greengenes_nodups_nbcn_picrust_KO_sum.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups_nbcn_picrust_KO_occurence.tsv", "$indir2/export/picrust/".$table_prefix."_greengenes_nodups_nbcn_picrust_KO_occurence.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups_nbcn.tsv",                      "$indir2/export/picrust/".$table_prefix."_greengenes_nodups_nbcn.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups_nbcn.biom",                     "$indir2/export/picrust/".$table_prefix."_greengenes_nodups_nbcn.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups.biom",                          "$indir2/export/picrust/".$table_prefix."_greengenes_nodups.biom"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/".$table_prefix."_greengenes_nodups.tsv",                           "$indir2/export/picrust/".$table_prefix."_greengenes_nodups.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/".$table_prefix."s/link.tsv",                                                          "$indir2/export/picrust/link.tsv"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/qual_stats_unassembled.pdf",                                                           "$indir2/export/qscores/qual_stats_unassembled.pdf"); 1 };
+   $symlink_exists = eval { symlink("$indir/amplicontagger/$reads_type/qscores/qscores_assembled_QCpassed.pdf",                                               "$indir2/export/qscores/qscores_assembled_QCpassed.pdf"); 1 };
+
+   system("tar -zchvf ./export$prefix.tar.gz ./export/");
+}else{
+   die("--type has to be either 'amplicons' or 'shotgun'\n");
+}
+

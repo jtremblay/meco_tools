@@ -1,0 +1,220 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Data::Dumper;
+
+my $usage=<<'ENDHERE';
+NAME:
+compileSLURMResources.pl
+
+PURPOSE:
+
+INPUT:
+--infiles <string>                   : Sequence file
+--prefixes <string>                  :
+--prefixes_clustering_alg <string>   :
+--job_order <string>                 :
+
+OUTPUT:
+
+NOTES:
+
+BUGS/LIMITATIONS:
+ 
+AUTHOR/SUPPORT:
+ - Biomonitoring
+Julien Tremblay - jtremblay514@gmail.com
+
+ENDHERE
+
+## OPTIONS
+my ($help, $infiles, $prefixes, $job_order, $prefixes_clustering_alg);
+my $verbose = 0;
+
+GetOptions(
+   'infiles=s'                  => \$infiles,
+   'prefixes=s'                 => \$prefixes,
+   'prefixes_clustering_alg=s'  => \$prefixes_clustering_alg,
+   'job_order=s'                => \$job_order,
+   'verbose'                    => \$verbose,
+   'help'                       => \$help
+);
+if ($help) { print $usage; exit; }
+
+## MAIN
+my %hash;
+my %hash_job_names;
+my @infiles = split(/,/, $infiles);
+my @prefixes = split(/,/, $prefixes);
+my @prefixes_clustering_alg = split(/,/, $prefixes_clustering_alg);
+my $job_name = "";
+foreach my $infile (@infiles){
+    my $prefix = shift(@prefixes);
+    my $prefix_clustering_method = shift(@prefixes_clustering_alg);
+
+    print STDERR "infile: ".$infile."\n";
+    print STDERR "infile: ".$prefix."\n";
+    print STDERR "infile: ".$prefix_clustering_method."\n";
+
+    open(IN, "<".$infile) or die "Can't open $infile\n";
+    while(<IN>){
+        chomp;
+        my @row = split(/\s+/, $_);
+        my $job_id = $row[0];
+
+        next if($_ =~ m/^--/);
+        next if($_ =~ m/^\s+JobID/);
+        next if($_ =~ m/^$/);
+        
+        if($job_id =~ m/\.bat\+/){
+            $job_id =~ s/\.bat\+//;
+            my $max_vmsize = $row[3];
+            my $time = $row[9];
+            my $max_rss = $row[7];
+            my $cpus = $row[8];
+
+            $hash{$prefix}{$job_name}{max_vmsize} = $max_vmsize;
+            $hash{$prefix}{$job_name}{max_rss} = $max_rss;
+            $hash{$prefix}{$job_name}{time} = $time;
+            $hash{$prefix}{$job_name}{cpus} = $cpus;
+            
+            #compute time in hrs:
+            my $hrs;
+            if($time =~ m/(\d+):(\d+):(\d+)/){
+                my $hour = $1;
+                my $minute = $2/60;
+                my $second = $3/60/60;
+                $hrs = $hour + $minute + $second;
+            }
+    
+            $hash{$prefix}{$job_name}{hours} = $hrs;
+            $hash{$prefix}{$job_name}{corehours} = $cpus * $hrs;
+
+
+        }elsif($job_id =~ m/\.ext\+/){
+            $job_id =~ s/\.ext\+//;
+                
+        }else{
+            $job_name = $row[1];
+            $hash{$prefix}{prefix} = $prefix;
+            $hash{$prefix}{prefix_clustering_method} = $prefix_clustering_method;
+            $hash{$prefix}{$job_name}{job_id} = $job_id;
+            $hash{$prefix}{$job_name}{job_name} = $job_name;
+            $hash_job_names{$job_name} = $job_name; 
+        }
+    }
+}
+
+print STDERR Dumper(\%hash);
+
+# print prefixes
+@prefixes = split(/,/, $prefixes);
+print STDOUT "JobName\t";
+foreach my $prefix (@prefixes) {
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+}
+print STDOUT "\n";
+
+# print clustering alg
+#@prefixes_clustering_alg = split(/,/, $prefixes_clustering_alg);
+@prefixes = split(/,/, $prefixes);
+print STDOUT "ClusteringMethod\t";
+foreach my $prefix (@prefixes) {
+    print STDOUT $hash{$prefix}{prefix_clustering_method}."\t";
+    print STDOUT $hash{$prefix}{prefix_clustering_method}."\t";
+    print STDOUT $hash{$prefix}{prefix_clustering_method}."\t";
+    print STDOUT $hash{$prefix}{prefix_clustering_method}."\t";
+    print STDOUT $hash{$prefix}{prefix_clustering_method}."\t";
+}
+print STDOUT "\n";
+
+# print metric
+@prefixes = split(/,/, $prefixes);
+print STDOUT "Metric\t";
+foreach my $prefix (@prefixes) {
+    print STDOUT "max_rss\ttime\tcpus\thours\tcorehours\t";
+}
+print STDOUT "\n";
+
+# core.year = hrs * number of cores / 24 / 365
+
+if($job_order){
+    my @job_names = split(/,/, $job_order);
+    foreach my $job_name (@job_names) {
+        print STDOUT $job_name;
+        foreach my $prefix (@prefixes) {
+            #print STDERR $prefix."\t";
+            if(exists $hash{$prefix}{$job_name}{max_rss}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{max_rss};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{time}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{time};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{cpus}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{cpus};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{hours}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{hours};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{corehours}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{corehours};
+            }else{
+                print STDOUT "\tNA";
+            }
+        }
+        print STDOUT "\n";
+    }
+    
+}else{
+
+    foreach my $job_name (keys %hash_job_names) {
+        print STDOUT $job_name;
+        foreach my $prefix (@prefixes) {
+            #print STDERR $prefix."\t";
+            if(exists $hash{$prefix}{$job_name}{max_rss}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{max_rss};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{time}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{time};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{cpus}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{cpus};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{hours}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{hours};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{corehours}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{corehours};
+            }else{
+                print STDOUT "\tNA";
+            }
+        }
+        print STDOUT "\n";
+    }
+}
+
+exit;
+

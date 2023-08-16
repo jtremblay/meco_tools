@@ -1,0 +1,271 @@
+---
+title: "Meta/transcriptomics exploratory analyses v0.2"
+author: "Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca"
+date: "r thedate"
+output: 
+   html_document:
+      fig_width: 30
+      fig_height: 12
+---
+
+These are heatmaps of the log2 normalized expression of genes found in supplied gene lists.
+
+```{r set-options, echo=FALSE, cache=FALSE, message=FALSE}
+options(width = 1000)
+library(ggplot2)
+library(grid)
+library(RColorBrewer)
+library(tools)
+library(pheatmap)
+#library(ComplexHeatmap)
+#library(circlize)
+library(colorspace)
+#library(GetoptLong)
+library(plyr)
+library(data.table)
+library(stringr)
+options(stringsAsFactors = FALSE)
+
+paste2 <- function(...,sep=", ") {
+    L <- list(...)
+    L <- lapply(L,function(x) {x[is.na(x)] <- ""; x})
+    gsub(paste0("(^",sep,"|",sep,"$)"),"",
+                gsub(paste0(sep,sep),sep,
+                     do.call(paste,c(L,list(sep=sep)))))
+}
+
+#Options variables:
+args <- commandArgs(TRUE)
+cutoff_logFC        = as.numeric(args[1])
+infile_abundance    = args[2]
+infile_annotations  = args[3]
+infile_mapping      = args[4]
+indir               = args[5]
+outdir              = args[6]
+infiles_genes_lists = args[7]
+
+#cutoff_logFC = 1.5
+#infile_abundance = "~/Projects/Alkanindiges/DEG_normalized_significant.tsv"
+#infile_annotations = "~/Projects/Alkanindiges/annotations.tsv"
+#infile_mapping = "~/Projects/Alkanindiges/mapping_file.tsv"
+#indir = "/home/jtrembla/Projects/Alkanindiges/DEG"
+#outdir = "~/Projects/Alkanindiges/metatranscriptomics_R_exploratory_pipeline/"
+#infiles_genes_lists = "/home/jtrembla/Projects/Alkanindiges/gene_list_all.txt"
+
+print(paste0("LogFC cutoff:", cutoff_logFC))
+print(infile_abundance)
+print(infile_annotations)
+print(infile_mapping)
+print(indir)
+print(outdir)
+print(infiles_genes_lists)
+
+dir.create(file.path(outdir), showWarnings = FALSE)
+files = list.files(path=indir, pattern="_edger_annotated.tsv", recursive=TRUE, full.names=TRUE)
+
+#genes_lists = c(
+#   #"/home/jtrembla/Projects/ESRF/list/list_alkane_mono.tsv",
+#   #"/home/jtrembla/Projects/ESRF/list/list_nahpthlane_diox.tsv",
+#   #"/home/jtrembla/Projects/ESRF/list/list_P450.tsv",
+#   #"/home/jtrembla/Projects/ESRF/list/list_ring_hydroxyl_diox.tsv",
+#   #"/home/jtrembla/Projects/ESRF/list/list_cyp153.tsv"
+#   "/home/jtrembla/Projects/ESRF/list/list_nitrogen_cycle.tsv"
+#)
+genes_lists = unlist(strsplit(infiles_genes_lists, ","))
+
+# For col annotations
+vColors = c(
+  "#0000CD", "#00FF00", "#FF0000", "#808080", "#000000", "#B22222", "#40E0D0", "#DAA520", "#DDA0DD", "#FF00FF",
+  "#00FFFF", "#4682B4", "#008000", "#E6E6FA", "#FF8C00", "#80008B", "#8FBC8F", "#00BFFF", "#FFFF00", "#808000"
+)
+
+# For row annotations
+vColors2 = c(
+   "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF",
+   "#FFCCFF", "#FFCCE5", "#FFFFFF", "#990000", "#666600", "#006666","#330066","#A0A0A0","#99004C"
+)
+      
+## Read data for each files and write heatmap in the heatmap dir with the appropriate file name.
+## Read mapping file
+##  Read mapping file and remove samples not in tax sheet.
+mapping_file = read.table(infile_mapping, sep="\t", colClasses = "character")
+header = read.table(infile_mapping, sep="\t", nrows=1, comment.char="")
+colnames(mapping_file) = header
+row.names(mapping_file) = mapping_file[,1]
+mapping_file[,1] = NULL
+#mapping_file[,ncol(mapping_file)] = NULL
+mapping_file_orig= mapping_file
+
+# --> Start current pathway analysis.
+tAbun <- fread(infile_abundance, header=T, skip=0, sep="\t", showProgress=FALSE)
+tAbun = data.frame(tAbun, check.names=FALSE)
+
+gene_ids = c()
+for(infile_expr in files){
+   #print(infile_expr)
+   
+   tData <- data.frame(fread(infile_expr, header=T, skip=0, sep="\t", showProgress=FALSE), check.names=FALSE)
+   # Remove uninteresting things.
+   tData2 = tData[tData$tax_class != "Mammalia", ]
+   tData2 = tData2[tData2$tax_kingdom != "NULL", ]
+   tData2 = tData2[tData2$tax_genus != "NULL", ]
+   tData2 = tData2[tData2$tax_genus != "Homo", ]
+   tData2 = tData2[tData2$tax_genus != "Mus", ]
+   # Split between neg and pos regul.
+   tData2Pos = tData2[tData2$logFC >= cutoff_logFC,]
+   gene_ids = c(gene_ids, tData2Pos[["#gene_id"]]) 
+}
+
+# From all data, get abundance from upregulated genes in gene list only.
+gene_ids = unique(gene_ids)
+tAbun2 = tAbun[tAbun[,1] %in% gene_ids,]
+
+# Then read annotation table, All annotations.
+tAnno <- data.frame(fread(infile_annotations, header=T, skip=0, sep="\t", showProgress=FALSE), check.names=FALSE)
+tAnno2 = tAnno[tAnno[,2] %in% tAbun2[,1], ] # Only keep genes differentilly abundant.
+
+# Then add taxonomy information to parse abundance table.
+tAbun2$tax_genus = tAnno2[tAnno2[,2] %in% gene_ids, (ncol(tAnno2)-1)]
+tAbun2$tax_family = tAnno2[tAnno2[,2] %in% gene_ids, (ncol(tAnno2)-2)]
+tAbun2$tax_order = tAnno2[tAnno2[,2] %in% gene_ids, (ncol(tAnno2)-3)]
+tAbun2$tax_class = tAnno2[tAnno2[,2] %in% gene_ids, (ncol(tAnno2)-4)]
+tAbun2$tax_phylum = tAnno2[tAnno2[,2] %in% gene_ids, (ncol(tAnno2)-5)]
+tAbun2$tax_kingdom = tAnno2[tAnno2[,2] %in% gene_ids, (ncol(tAnno2)-6)]
+
+# create custom color code for annotation (COLUMNS) from mapping file
+curr_list = list()
+x=1
+
+if(ncol(mapping_file) == 1){
+   curr_col_name = names(mapping_file)[1]
+   curr_var_names = unique(mapping_file[,1])
+   curr_colors = vColors[x:(x+(length(curr_var_names)-1))]
+   names(curr_colors) = curr_var_names
+   x = length(curr_var_names) + 1 + x
+   curr_list[[curr_col_name]] = curr_colors
+   
+}else{
+   for(j in 1:ncol(mapping_file)){
+      curr_col_name = names(mapping_file)[j]
+      curr_var_names = unique(mapping_file[,j])
+      curr_colors = vColors[x:(x+(length(curr_var_names)-1))]
+      names(curr_colors) = curr_var_names
+      x = length(curr_var_names) + 1 + x
+      curr_list[[curr_col_name]] = curr_colors
+   }
+}
+   
+if(!is.null(tAbun2)){       
+   
+   # Once I have all DEG genes, loop through gene list an draw heatmap for each.
+   k=1
+   for(curr_genes in genes_lists){
+      #print(curr_genes)
+      #curr_name = lists_names[k]
+      curr_name =  basename(file_path_sans_ext(curr_genes))
+      prefix = basename(file_path_sans_ext(curr_genes))
+      #outfilePdf = paste0(outdir_genes, "/", prefix, ".pdf")
+      #outfileJpg = paste0(outdir_genes, "/", prefix, ".jpg")
+      tGenes <- read.csv(file=curr_genes, header=F, skip=0, sep="\t", check.names=FALSE, quote="")
+
+      # Draw a heatmap containing everything. Loop through Level 2 Kegg pathways.
+      cat("## Heatmap of abundance for all platforms - ", curr_name, "\n")
+      cat("\n")
+   
+      # Then get abundance
+      tAnno3 = tAnno2[tAnno2[,2] %in% tGenes$V1,]
+      tAbun3 = tAbun2[tAbun2[,1] %in% tAnno3[,2],]
+      
+      if(nrow(tAbun3) < 1){
+         next()
+      }
+      
+      # Then sort both table in the same order.
+      tAnno3 = tAnno3[order(tAnno3[,2]),]
+      tAbun3 = tAbun3[order(tAbun3[,1]),]
+      
+      # Add tax info.
+      tAbun3$tax_genus = tAnno3[tAnno3[,2]   %in% tAnno3[,2], (ncol(tAnno3)-1)]
+      tAbun3$tax_family = tAnno3[tAnno3[,2]  %in% tAnno3[,2], (ncol(tAnno3)-2)]
+      tAbun3$tax_order = tAnno3[tAnno3[,2]   %in% tAnno3[,2], (ncol(tAnno3)-3)]
+      tAbun3$tax_class = tAnno3[tAnno3[,2]   %in% tAnno3[,2], (ncol(tAnno3)-4)]
+      tAbun3$tax_phylum = tAnno3[tAnno3[,2]  %in% tAnno3[,2], (ncol(tAnno3)-5)]
+      tAbun3$tax_kingdom = tAnno3[tAnno3[,2] %in% tAnno3[,2], (ncol(tAnno3)-6)]
+      tAbun3$product_name = tAnno3[tAnno3[,2] %in% tAnno3[,2], 3]
+      
+      # Remove potential dups.
+      df_unique = unique(tAbun3)
+      
+      colnames(df_unique) = gsub(".genes", "", colnames(df_unique))
+      row.names(df_unique) = paste0(df_unique$cluster,"-", df_unique$tax_genus, "-", df_unique$product_name)
+      mapping_file2 = mapping_file[row.names(mapping_file) %in% colnames(df_unique),,drop=FALSE]
+      notin = mapping_file2[(!mapping_file2[,1] %in% colnames(df_unique)),]
+      notin2 = colnames(df_unique)[(!colnames(df_unique) %in% mapping_file2[,1] )]
+            
+      # Prepare matrix to be plottted in heatmap. Don't forget to remove samples not annotated.
+      df_unique$cluster = NULL
+      row_names_taxonomy = df_unique$tax_genus
+      df_unique$tax_genus = NULL
+      df_unique2 = df_unique[,1:(ncol(df_unique)-6)]
+      df_unique2 = log2(df_unique2)
+      df_unique3 = df_unique2[, row.names(mapping_file2)]
+      
+      # Add colors for row annotations.
+      curr_col_name = "Order"
+      curr_var_names = unique(tAnno3$tax_order)
+      curr_colors = vColors2[1:(length(unique(tAnno3$tax_order)))]
+      names(curr_colors) = unique(tAnno3$tax_order)
+      curr_list[[curr_col_name]] = curr_colors
+      
+      # Then create data frame for row annotation
+      mapping_file_col = data.frame(tAnno3$tax_order, row.names=paste0(tAnno3$gene_id,"-", tAnno3$tax_genus, "-", tAnno3$product_name))
+      colnames(mapping_file_col) = c("Order")
+
+      
+      if( (nrow(df_unique3) <= 2) | (ncol(df_unique3) <= 2) ){
+         next()
+      }
+        
+      pheatmap(
+         main=paste0("Occurence of genes by ", curr_name, " - All factors"), 
+         df_unique3,
+         #filename=outfilePdf,
+         #fontsize_row=5, 
+         #fontsize_col=3,
+         annotation_col=mapping_file2,
+         annotation_row=mapping_file_col,
+         annotation_colors=curr_list,
+         clustering_method="average"
+      )
+        
+      #Then draw heatmaps binned by Platforms
+      cat("## Heatmap split by variables - ", curr_name, "\n")
+      cat("\n")
+      #platforms = as.character(unique(mapping_file2$Platform))
+      columns = as.character(unique(colnames(mapping_file)))
+      for(curr_column in columns){
+         variables = unique(mapping_file[[curr_column]])
+         
+         #for(curr_variable in variables){
+            mapping_file3 = mapping_file2[colnames(mapping_file2) %in% curr_column,,drop=FALSE]
+            df_unique4 = df_unique3[,row.names(mapping_file3)]
+            
+            # Draw a heatmap containing everything.
+            pheatmap(
+               main=paste0("Occurence of genes by ", curr_name, " - ", curr_column), 
+               df_unique4, 
+               #fontsize_col=5,
+               #fontsize_row=7,
+               annotation_row=mapping_file_col,
+               annotation_col=mapping_file3,
+               annotation_colors=curr_list,
+               #filename=outfilePdf,
+               #labels_row=rep("", nrow(df_unique3)), fontsize_row=12,
+               clustering_method="average"
+            )
+         #}
+         k = k + 1
+      }
+   }
+}
+```

@@ -1,0 +1,160 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Data::Dumper;
+
+my $usage=<<'ENDHERE';
+NAME:
+compileSLURMResources.pl
+
+PURPOSE:
+
+INPUT:
+--infiles <string> : Sequence file
+				
+OUTPUT:
+
+NOTES:
+
+BUGS/LIMITATIONS:
+ 
+AUTHOR/SUPPORT:
+National Research Council Canada - Genomics and Microbiomes
+Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+
+ENDHERE
+
+## OPTIONS
+my ($help, $infiles, $prefixes, $job_order);
+my $verbose = 0;
+
+GetOptions(
+   'infiles=s'   => \$infiles,
+   'prefixes=s'  => \$prefixes,
+   'job_order=s' => \$job_order,
+   'verbose'     => \$verbose,
+   'help'        => \$help
+);
+if ($help) { print $usage; exit; }
+
+## MAIN
+my %hash;
+my %hash_job_names;
+my @infiles = split(/,/, $infiles);
+my @prefixes = split(/,/, $prefixes);
+my $job_name = "";
+foreach my $infile (@infiles){
+    my $prefix = shift(@prefixes);
+
+    open(IN, "<".$infile) or die "Can't open $infile\n";
+    while(<IN>){
+        chomp;
+        my @row = split(/\s+/, $_);
+        my $job_id = $row[0];
+
+        next if($_ =~ m/^--/);
+        next if($_ =~ m/^\s+JobID/);
+        next if($_ =~ m/^$/);
+        
+        if($job_id =~ m/\.bat\+/){
+            $job_id =~ s/\.bat\+//;
+            my $max_vmsize = $row[3];
+            my $time = $row[5];
+            my $max_rss = $row[7];
+
+            $hash{$prefix}{$job_name}{max_vmsize} = $max_vmsize;
+            $hash{$prefix}{$job_name}{max_rss} = $max_rss;
+            $hash{$prefix}{$job_name}{time} = $time;
+
+        }elsif($job_id =~ m/\.ext\+/){
+            $job_id =~ s/\.ext\+//;
+                
+        }else{
+            $job_name = $row[1];
+            $hash{$prefix}{prefix} = $prefix;
+            $hash{$prefix}{$job_name}{job_id} = $job_id;
+            $hash{$prefix}{$job_name}{job_name} = $job_name;
+            $hash_job_names{$job_name} = $job_name; 
+        }
+    }
+}
+
+print STDERR Dumper(\%hash);
+
+@prefixes = split(/,/, $prefixes);
+print STDOUT "JobName\t";
+foreach my $prefix (keys %hash) {
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix}."\t";
+    print STDOUT $hash{$prefix}{prefix};
+}
+print STDOUT "\n";
+
+if($job_order){
+    my @job_names = split(/,/, $job_order);
+    foreach my $job_name (@job_names) {
+        print STDOUT $job_name;
+        foreach my $prefix (@prefixes) {
+            #print STDERR $prefix."\t";
+            if(exists $hash{$prefix}{$job_name}{max_rss}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{max_rss};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{time}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{time};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{max_vmsize}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{max_vmsize};
+            }else{
+                print STDOUT "\tNA";
+            }
+            print STDOUT "\t";
+            #print STDERR "\n";
+        }
+        print STDOUT "\n";
+    }
+    
+}else{
+
+    foreach my $job_name (keys %hash_job_names) {
+        print STDOUT $job_name;
+        foreach my $prefix (@prefixes) {
+            #print STDERR $prefix."\t";
+            if(exists $hash{$prefix}{$job_name}{max_rss}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{max_rss};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{time}){
+                print STDOUT "\t".$hash{$prefix}{$job_name}{time};
+            }else{
+                print STDOUT "\tNA";
+            }
+            if(exists $hash{$prefix}{$job_name}{max_vmsize}){ 
+                print STDOUT "\t".$hash{$prefix}{$job_name}{max_vmsize};
+            }else{
+                print STDOUT "\tNA";
+            }
+            print STDOUT "\t";
+            #print STDERR "\n";
+        }
+        print STDOUT "\n";
+    }
+}
+
+
+exit;
+
+
