@@ -2,7 +2,7 @@
 
 # Function that takes multiples gene count bed files and 
 # merges them into on file (abundance matrix). Intended for the miRNA pipeline.
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 
 options(stringsAsFactors = FALSE)
 mergeTablesMiRNA <- function(infiles, outfileRaw, outfileCpm, outfileRpkm, keepMatureOnly=TRUE) {

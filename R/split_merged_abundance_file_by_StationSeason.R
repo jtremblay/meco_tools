@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 
 # splitGeneAbundanceMatrix.
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 splitGeneAbundanceMatrix <- function(abundance_file, mapping_file, outdir) {
    options(stringsAsFactors = FALSE) 
    library(data.table)

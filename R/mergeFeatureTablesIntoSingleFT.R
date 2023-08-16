@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Function that takes multiples feature tables and merges them into on file (matrix).
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 
 library(data.table)
 options(stringsAsFactors = FALSE)

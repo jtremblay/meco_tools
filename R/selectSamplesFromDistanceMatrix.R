@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 
 # extract samples from a distance matrix.
 # National Research Council Canada - Genomics and Microbiomes
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 library(data.table)
 parseDistanceMatrix <- function(infile, outfile, samples) {
    

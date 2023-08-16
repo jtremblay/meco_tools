@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 
 # Center Log-ration transform.
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 addRowNamesToTsne <- function(infile_tsne, infile_clr, outfile) {
 
     library(data.table)

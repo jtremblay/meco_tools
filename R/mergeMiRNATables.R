@@ -2,7 +2,7 @@
 
 # Takes a miRNA raw abundance matrix as input and generates
 # rpkm and filtered tables.
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 
 options(stringsAsFactors = FALSE)
 mergeMiRNATables <- function(infile_abundance, infile_mature, outfile) {

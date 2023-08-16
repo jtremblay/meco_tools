@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 
 # Tetra nucleotide frequency test.
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 computeTetraNuclFreq <- function(infile, outfile) {
 
 }

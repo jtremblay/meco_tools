@@ -2,7 +2,7 @@
 
 # Function that takes multiples taxonomy tables and merges them. 
 # merges them into on file (matrix). Intended for the mgs_augmented_assembly pipeline
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 
 library(data.table)
 options(stringsAsFactors = FALSE)

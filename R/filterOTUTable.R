@@ -2,7 +2,7 @@
 
 # Function that takes a infile: (Qiime's tax summary spreadsheets) and an outdir where to
 # To write filtered otu table by abundance.
-# Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Julien Tremblay - jtremblay514@gmail.com
 generatePlots <- function(infile, outdir, abundance_cutoff) {
    library(ggplot2)
    library(scales)

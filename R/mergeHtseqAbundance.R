@@ -2,7 +2,7 @@
 
 # Function that takes multiples gene count bed files and 
 # merges them into on file (matrix). Intended for classic RNA-Seq
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 
 options(stringsAsFactors = FALSE)
 mergeHtseq <- function(infiles_htseq, outfileRaw, outfileNormalized) {

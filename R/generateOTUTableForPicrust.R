@@ -5,7 +5,7 @@ library(data.table)
 
 # Function to generate a OTU table based on blast results (against Greengenes).
 # National Research Council Canada - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 generateOTUTableForPicrust <- function(infile_blast, infile_otu_table, outfile) {
    
    #infile_blast = "~/Projects/picrust/blast.out.besthit"

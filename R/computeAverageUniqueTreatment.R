@@ -5,7 +5,7 @@ options(stringsAsFactors = FALSE)
 library(data.table)
 
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 # mapping file has to have a column UniqueTreatment
 computeAverageFromMergedAbundance <- function(abundance_file, mapping_file, outfile) {
    # Read annotations and associate KO with each gene_id (if available)

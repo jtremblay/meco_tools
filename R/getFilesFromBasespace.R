@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Function that fetches files from basespace given an input project id.
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca	
+# Author: Julien Tremblay - jtremblay514@gmail.com	
 getFilesFromBasespace <- function(PROJECT_ID){	
 	library(BaseSpaceR)
 	

@@ -2,7 +2,7 @@
 
 # Function that takes a reads-based count matrix and writes in output
 # a Count-Per-Million matrix.
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 
 options(stringsAsFactors = FALSE)
 generateCPMs <- function(infile, outfile) {

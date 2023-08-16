@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 library(data.table)
 
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 roundOTUTable <- function(infile, outfile) {
 
     data = data.frame(fread(infile, skip="#OTU ID"), check.names=FALSE)

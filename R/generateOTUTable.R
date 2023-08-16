@@ -5,7 +5,7 @@ options(stringsAsFactors = FALSE)
 # Generate OTU table from shotgun metagenomics
 # reads abundance data.
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 generateOTUTable <- function(gene_abun_filename, taxonomy_filename, outfile) {
    taxonomy = read.table(taxonomy_filename, sep="\t", header=T, comment.char="")
    colnames(taxonomy)[1] = "gene_id"

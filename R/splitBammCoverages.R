@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 
 # Split bamm parse output in individual files for maxbin compatibility.
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 splitBammCoverage <- function(infile, outfile) {
   library(data.table)
   library(tools)

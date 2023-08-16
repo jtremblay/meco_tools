@@ -4,7 +4,7 @@ options(stringsAsFactors = FALSE)
 
 # Merge duk logs with qc mapping stats.
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 mergeDukWithQC <- function(infile_duk, infile_qc, outfile) {
 
    library(data.table)

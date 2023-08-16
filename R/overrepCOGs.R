@@ -5,7 +5,7 @@ library(data.table)
 library(dplyr)
 
 # National Research Council - Biomonitoring
-# Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+# Author: Julien Tremblay - jtremblay514@gmail.com
 overrepCOGs <- function(infile_abundance, infile_cogs, outfile) {
 
     cog = data.frame(fread(infile_cogs, header=FALSE), check.names=FALSE)
