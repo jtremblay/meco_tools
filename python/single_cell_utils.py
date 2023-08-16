@@ -2,7 +2,7 @@
  
 """Python utilities for single cell rna/dna sequencing data type.
 
-Julien Tremblay - jtremblay514@gmail.com
+Julien Tremblay - jtremblay514@gmail.comjtremblay514@gmail.com
 """
 
 import os

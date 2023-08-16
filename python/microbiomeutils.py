@@ -6,7 +6,7 @@ is to avoid using .biom tables whose usage was enforced in later QIIME releases.
 I ended up realizing that myself and collaborators pretty much never use these 
 .biom tables anyways. So why bother generating them in the first place?
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.comjtremblay514@gmail.com 
 """
  
 import os

@@ -2,7 +2,7 @@
  
 """A simple script to parse fast5 reads.
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

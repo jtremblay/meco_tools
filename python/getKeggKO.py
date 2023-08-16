@@ -2,7 +2,7 @@
  
 """Takes input in blastp against kegg database. (parsed output that is...)
 and an abundance (gene count) table and output a Kxxxx abundance table.
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

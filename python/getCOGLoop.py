@@ -2,7 +2,7 @@
  
 """Takes input in rps-blast format against COG database. (parsed output that is...)
 and an abundance (gene count) table and output a COG abundance table.
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

@@ -2,7 +2,7 @@
  
 """Script to fetch data from basespace for a given project ID.
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
 
 import os

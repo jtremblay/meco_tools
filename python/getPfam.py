@@ -2,7 +2,7 @@
  
 """Takes input in hmmsearch of genes vs pfam-A db. (parsed output that is...)
 and an abundance (gene count) table and output a PFAM domain abundance table.
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

@@ -2,7 +2,7 @@
  
 """Tree parsing test scripts.
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

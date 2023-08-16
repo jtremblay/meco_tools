@@ -2,7 +2,7 @@
  
 """Takes input in rps-blast format against KOG database. (parsed output that is...)
 and an abundance (gene count) table and output a KOG abundance table.
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

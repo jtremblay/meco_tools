@@ -2,7 +2,7 @@
  
 """Software to build and access metagenomic data in a hdf5 database.
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
 import os
 import sys

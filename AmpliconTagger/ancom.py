@@ -3,7 +3,7 @@
 """Implementation of ancomP (i.e. Python3 implementation of ANCOM).
 returns OTUs differentially abundant between two conditions. Treatment vs control
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
 
 import sys

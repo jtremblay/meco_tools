@@ -2,7 +2,7 @@
  
 """Takes input in rps-blast format against PFAM database. (parsed output that is...)
 and an abundance (gene count) table and output a PFAM abundance table.
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

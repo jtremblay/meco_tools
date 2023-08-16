@@ -2,7 +2,7 @@
  
 """A simple python script template.
 
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os

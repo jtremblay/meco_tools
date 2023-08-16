@@ -2,7 +2,7 @@
  
 """Takes input in rps-blast format against TIGRFAM database. (parsed output that is...)
 and an abundance (gene count) table and output a TIGRFAM abundance table.
-Julien Tremblay - 
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os
