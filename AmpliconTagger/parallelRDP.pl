@@ -5,7 +5,7 @@ use warnings;
 
 use Symbol 'delete_package';
 use Env qw/TMPDIR/;
-use String::Approx 'aslice';
+#use String::Approx 'aslice';
 use List::Util qw(sum);
 use threads;
 use threads::shared;
@@ -149,7 +149,7 @@ if($fasta){
     my $pid = $pm->start($index) and next;
 
     ## LAUNCH THE RDP CLASSIFIER
-    my $cmd = "java -d64 -Xmx".$ram." -jar ".$rdp_classifier;
+    my $cmd = "java -Xmx".$ram." -jar ".$rdp_classifier;
     $cmd .= " -q ".$_;
     $cmd .= " -o ".$tmpdir."/OUT_".$index;
     $cmd .= " -t ".$rdp_training_set;
@@ -306,7 +306,7 @@ sub worker {
     close $FASTA_TEMP;
   
     ## LAUNCH THE RDP CLASSIFIER
-    my $cmd = "java -d64 -Xmx".$ram." -jar ".$rdp_classifier;
+    my $cmd = "java -Xmx".$ram." -jar ".$rdp_classifier;
     $cmd .= " -q ".$tmpdir."/temp_fasta_".$tid.".fasta";
     $cmd .= " -o ".$outfile;
     $cmd .= " -t ".$rdp_training_set;

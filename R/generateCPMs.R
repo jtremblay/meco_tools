@@ -23,9 +23,9 @@ generateCPMs <- function(infile, outfile) {
   }
 
   ## edgeR. Load table, remove low cpm. 
-  #tData = tData[which(rowSums(tData) > 0),]
+  df = df[which(rowSums(df) > 0),]
   print("Running normalization...")
-  y <- DGEList(df, remove.zeros=FALSE)
+  y <- DGEList(df, remove.zeros=TRUE)
   y <- calcNormFactors(y, method="TMM")
   cpms = cpm(y)
   cpms = round(cpms, digits=3)

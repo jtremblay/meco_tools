@@ -6,7 +6,7 @@ __credits__ = ["Julien Tremblay"]
 __license__ = "GPL"
 __version__ = "1.0.0"
 __maintainer__ = "Julien Tremblay"
-__email__ = ""
+__email__ = "julien.tremblay@nrc-cnrc.gc.ca"
 __status__ = "Release"
 
 
@@ -85,7 +85,7 @@ def parse_feature_table(lines,count_map_f=int):
                         try:
                             feature_table.append(array(list(map(count_map_f, fields[1:-1]))))
                         except ValueError:
-                            feature_table.append(array(list(map(float, fields[1:-1]))))
+                            feature_table.append(array(list(map(float64, fields[1:-1]))))
                             
                         metadata.append(map(str.strip, fields[-1].split(';')))
                     else:
@@ -95,7 +95,7 @@ def parse_feature_table(lines,count_map_f=int):
                         try:
                             feature_table.append(array(list(map(count_map_f,fields[1:]))))
                         except ValueError:
-                            feature_table.append(array(list(map(float, fields[1:]))))
+                            feature_table.append(array(list(map(float64, fields[1:]))))
                         
     return sample_ids, otu_ids, (feature_table), metadata
 
@@ -182,7 +182,7 @@ def make_summary(feature_table, level, upper_percentage, lower_percentage):
 
     counts_by_consensus, sample_map = sum_counts_by_consensus(feature_table, level)
 
-    total_counts = float(sum([sum(i) for i in counts_by_consensus.values()]))
+    total_counts = float64(sum([sum(i) for i in counts_by_consensus.values()]))
     taxonomy_summary = []
     for consensus, otu_counts in sorted(counts_by_consensus.items()):
         if lower_percentage!=None and \
@@ -208,7 +208,7 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
     result = {}
     sample_map = dict([(s,i) for i,s in enumerate(feature_table[0])])
     for counts, consensus in zip(feature_table[2], feature_table[3]):
-        counts = counts.astype(float)
+        counts = counts.astype(float64)
         consensus = list(consensus)
         n_ranks = len(consensus)
         if n_ranks > level:
@@ -285,7 +285,7 @@ def format_summarize_taxa(summary, header, delimiter=';'):
         line = [delimiter.join(taxon)]
 
         # add on otu counts
-        line.extend(map(str, around(row[1:], 3)))
+        line.extend(map(str, around(row[1:], 8)))
 
         yield "%s\n" % '\t'.join(line)
 
@@ -295,7 +295,7 @@ def convert_feature_table_relative(feature_table):
     this method works on a parsed OTU table
     """
     sample_ids, otu_ids, otu_counts, consensus = feature_table
-    otu_counts = asarray(otu_counts, float)
+    otu_counts = asarray(otu_counts, float64)
     otu_counts = otu_counts / otu_counts.sum(axis=0)
     otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
     return (sample_ids, otu_ids, otu_counts, consensus)
@@ -316,10 +316,10 @@ def parse_distmat(infile):
             header = list(map(str.strip, line.split('\t')[1:]))
             #sys.stderr.write(str(header) + "\n");
         else:
-            tmp = list(map(float, line.split('\t')[1:]))
+            tmp = list(map(float64, line.split('\t')[1:]))
             result.append(tmp)
     
-    result = asarray(result, dtype=float)
+    result = asarray(result, dtype=float64)
     #print(result)
     return(header, result)
 
