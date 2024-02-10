@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Env qw/TMPDIR/;
-use String::Approx 'aslice';
+#use String::Approx 'aslice';
 use List::Util qw(sum);
 use File::Temp;
 use threads;

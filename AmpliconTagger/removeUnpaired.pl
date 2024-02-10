@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Env qw/TMPDIR/;
-use String::Approx 'aslice';
+#use String::Approx 'aslice';
 use List::Util qw(sum);
 use File::Temp;
 use threads;
@@ -14,7 +14,7 @@ use Iterator::FastaDb;
 use Iterator::FastqDb;
 use Iterator::ValidateFastq;
 use Iterator::Utils;
-use Devel::Size qw(size total_size);
+#use Devel::Size qw(size total_size);
 
 $SIG{INT} = sub{exit}; #Handle ungraceful exits with CTRL-C.
 
