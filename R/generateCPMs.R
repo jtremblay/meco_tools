@@ -5,10 +5,13 @@
 # Author: Julien Tremblay - jtremblay514@gmail.com
 
 options(stringsAsFactors = FALSE)
-generateCPMs <- function(infile, outfile) {
+generateCPMs <- function(infile, outfile, generate_cpms_with_edger) {
 
   library(edgeR)
   library(data.table)
+
+  generate_cpms_with_edger = as.logical(generate_cpms_with_edger)
+  message("generate_cpms_with_edger: ", generate_cpms_with_edger)
 
   df = data.frame(fread(infile, header=TRUE, sep="\t"), check.names=FALSE)
 
@@ -25,13 +28,18 @@ generateCPMs <- function(infile, outfile) {
   ## edgeR. Load table, remove low cpm. 
   df = df[which(rowSums(df) > 0),]
   print("Running normalization...")
-  y <- DGEList(df, remove.zeros=TRUE)
-  y <- calcNormFactors(y, method="TMM")
-  cpms = cpm(y)
-  cpms = round(cpms, digits=3)
+  if(isTRUE(generate_cpms_with_edger)){
+      y = DGEList(df, remove.zeros=TRUE)
+      y = calcNormFactors(y, method="TMM")
+      cpms = cpm(y)
+      cpms = round(cpms, digits=3)
+  }else{
+      cpms = apply(df,2, function(x) (round(((x/(sum(x)+1))*1000000), digits=3)))  
+  }
   #keep <- rowSums(cpm(y)>1) >= 2
   #y <- y[keep, , keep.lib.sizes=FALSE]
   #cpms = apply(df,2, function(x) (round( ((x/(sum(x)+1))*1000000), digits=3)))
+  #CPM = ((counts on the features) / library size) X 1,000,000
   #cpms = round(cpm(y1), digits=3)
    
   #cpms = round(cpms, digits=3)
@@ -59,7 +67,9 @@ for (i in 1:length(ARG)) {
     infile = ARG[i+1]
   } else if (ARG[i] == "-o") {
     outfile = ARG[i+1]
+  } else if (ARG[i] == "-n") {
+    generate_cpms_with_edger = ARG[i+1]
   }
 }
 
-generateCPMs(infile, outfile)
+generateCPMs(infile, outfile, generate_cpms_with_edger)
