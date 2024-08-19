@@ -5,13 +5,17 @@
 # Author: Julien Tremblay - jtremblay514@gmail.com
 
 options(stringsAsFactors = FALSE)
-generateCPMs <- function(infile, outfile, generate_cpms_with_edger) {
-
+generateCPMs <- function(infile, outfile, skip_norm_factors) {
+  
+  #infile = "/project/6049199/projects/mock_community_shotgunMG/contig_abundance/merged_contig_abundance.tsv"
+  #outfile = "/project/6049199/projects/mock_community_shotgunMG/contig_abundance/merged_contig_abundance_cpm.tsv"
+  #skip_norm_factors = "FALSE"
+    
   library(edgeR)
   library(data.table)
 
-  generate_cpms_with_edger = as.logical(generate_cpms_with_edger)
-  message("generate_cpms_with_edger: ", generate_cpms_with_edger)
+  skip_norm_factors = as.logical(skip_norm_factors)
+  message("skip_norm_factors: ", skip_norm_factors)
 
   df = data.frame(fread(infile, header=TRUE, sep="\t"), check.names=FALSE)
 
@@ -28,25 +32,22 @@ generateCPMs <- function(infile, outfile, generate_cpms_with_edger) {
   ## edgeR. Load table, remove low cpm. 
   df = df[which(rowSums(df) > 0),]
   print("Running normalization...")
-  if(isTRUE(generate_cpms_with_edger)){
+  if(isFALSE(skip_norm_factors)){
       y = DGEList(df, remove.zeros=TRUE)
       y = calcNormFactors(y, method="TMM")
       cpms = cpm(y)
       cpms = round(cpms, digits=3)
   }else{
-      cpms = apply(df,2, function(x) (round(((x/(sum(x)+1))*1000000), digits=3)))  
+      cpms = data.frame(apply((df+0), 2, function(x) (round(((x/(sum(x)+0))*1000000), digits=3))))
+      # gives exactly the same value as edgeR's cpm() function
+      # But we'll skip this for now.
+      #for (i in seq_along(cpms)){
+      #  set(cpms, j=i, value=cpms[[i]] / norm_factors$norm.factors[i])
+      #}
   }
-  #keep <- rowSums(cpm(y)>1) >= 2
-  #y <- y[keep, , keep.lib.sizes=FALSE]
-  #cpms = apply(df,2, function(x) (round( ((x/(sum(x)+1))*1000000), digits=3)))
-  #CPM = ((counts on the features) / library size) X 1,000,000
-  #cpms = round(cpm(y1), digits=3)
-   
-  #cpms = round(cpms, digits=3)
-  #write.table(cpms, outfileCpm, quote=FALSE, sep="\t", row.names=TRUE, col.names=NA)
   fwrite(as.data.frame(cpms), outfile, row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
   
-  print("Done merging and normalizing tables...")
+  print("Done normalizing table...")
 } 
 
 usage=function(errM) {
@@ -68,8 +69,8 @@ for (i in 1:length(ARG)) {
   } else if (ARG[i] == "-o") {
     outfile = ARG[i+1]
   } else if (ARG[i] == "-n") {
-    generate_cpms_with_edger = ARG[i+1]
+    skip_norm_factors = ARG[i+1]
   }
 }
 
-generateCPMs(infile, outfile, generate_cpms_with_edger)
+generateCPMs(infile, outfile, skip_norm_factors)
