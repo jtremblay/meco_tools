@@ -24,6 +24,7 @@ INPUT:
 --kegg <string              : kegg blastpn results
 --taxonomy <string>         : taxonomy results from both NCBI nt blastn and NCBI nr - diamond blastp nr/refseq
 --ublast <string>           : ublast_nr results - i.e. can submit an empty file.
+--cazy <string>             : cazy parsed output - i.e. can submit an empty file.
 --taxonomy_type <string>    : 'consensus' or 'contigs'. Default='contigs'
 
 OUTPUT:
@@ -36,13 +37,12 @@ NOTES:
 BUGS/LIMITATIONS:
  
 AUTHOR/SUPPORT:
-, Genomics and Microbiomes
 Julien Tremblay - jtremblay514@gmail.com
 
 ENDHERE
 
 ## OPTIONS
-my ($help, $infile_fasta, $infile_gff, $pfam, $cog, $kog, $kegg, $taxonomy, $ublast, $prefix, $outfile_fasta, $outfile_gff, $taxonomy_type);
+my ($help, $infile_fasta, $infile_gff, $pfam, $cog, $kog, $kegg, $taxonomy, $ublast, $cazy, $prefix, $outfile_fasta, $outfile_gff, $taxonomy_type);
 my $verbose = 0;
 
 GetOptions(
@@ -56,6 +56,7 @@ GetOptions(
    'kog=s'              => \$kog,
    'kegg=s'             => \$kegg,
    'ublast=s'           => \$ublast,
+   'cazy=s'             => \$cazy,
    'taxonomy=s'         => \$taxonomy,
    'taxonomy_type=s'    => \$taxonomy_type,
    'verbose' 	        => \$verbose,
@@ -340,6 +341,38 @@ while(<IN>){
 }
 close(IN);
 
+open(IN, "<".$cazy) or die "Can't open $cazy\n";
+undef %seen;
+while(<IN>){
+   chomp;
+   next if($_ =~ m/^#/);
+   next if($_ =~ m/^$/);
+   my @row = split(/\t/, $_);
+   #0, 12, 13
+   my $gene_id = $row[0];
+   $gene_id =~ s/gene_id=//;
+   $gene_id =~ s/gene_id_//;
+   if(!exists $seen{$gene_id}){
+      # get contig id first...
+      my $contig_id = $hash_gene_to_contig{$gene_id};
+
+      $hash{$contig_id}{$gene_id}{cazy_id} = $row[1];
+      $hash{$contig_id}{$gene_id}{cazy_mechanism} = $row[2];
+      $hash{$contig_id}{$gene_id}{'3D_structure'} = $row[3];
+      $hash{$contig_id}{$gene_id}{cazy_main_activity} = $row[4];
+      $hash{$contig_id}{$gene_id}{cazy_activities} = $row[5];
+
+      $seen{$gene_id} = 1;
+   }
+   
+   #if($. > 100){
+   #   print STDERR Dumper(\%hash);
+   #   print STDERR Dumper(\%hash_gene_to_contig);
+   #   last;
+   #}
+}
+close(IN);
+
 # Ublastp nr
 open(IN, "<".$ublast) or die "Can't open $ublast\n";
 undef %seen;
@@ -607,7 +640,10 @@ close(OUT_GFF);
 # Then print reference tsv table
 print STDOUT "#contig_id\tgene_id\tproduct_name\tkegg_entry\tkegg_definition\tkegg_module\tkegg_module_desc\tkegg_pathway\tkegg_pathway_desc\t";
 print STDOUT "pfam_access\tpfam_product_name\tpfam_desc\ttigrfam_access\ttigrfam_name\ttigrfam_product_name\ttigrfam_desc\t";
-print STDOUT "cog_access\tcog_name\tcog_function\tcog_category\tkog_access\tkog_name\tkog_function\tkog_category\tublastp\tublastp_desc\ttax_kingdom\ttax_phylum\ttax_class\ttax_order\ttax_family\ttax_genus\ttax_specie\n";
+print STDOUT "cog_access\tcog_name\tcog_function\tcog_category\tkog_access\tkog_name\tkog_function\tkog_category\tublastp\tublastp_desc\t";
+print STDOUT "cazy_id\tcazy_mechanism\tcazy_3D_structure\tcazy_main_activity\tcazy_activities\t";
+print STDOUT "tax_kingdom\ttax_phylum\ttax_class\ttax_order\ttax_family\ttax_genus\ttax_specie\n";
+
 for my $contig_id (sort {$a cmp $b} keys %hash) {
    for my $gene_id (sort {$a cmp $b} keys %{ $hash{$contig_id} }){
 
@@ -660,6 +696,11 @@ for my $contig_id (sort {$a cmp $b} keys %hash) {
       if(exists $hash{$contig_id}{$gene_id}{KOG_CATEGORY}){         print STDOUT $hash{$contig_id}{$gene_id}{KOG_CATEGORY}."\t";}         else{ print STDOUT "NULL\t";}
       if(exists $hash{$contig_id}{$gene_id}{UBLASTP_NR}){           print STDOUT $hash{$contig_id}{$gene_id}{UBLASTP_NR}."\t";}           else{ print STDOUT "NULL\t";}
       if(exists $hash{$contig_id}{$gene_id}{UBLASTP_NR_DESC}){      print STDOUT $hash{$contig_id}{$gene_id}{UBLASTP_NR_DESC}."\t";}      else{ print STDOUT "NULL\t";}
+      if(exists $hash{$contig_id}{$gene_id}{cazy_id}){              print STDOUT $hash{$contig_id}{$gene_id}{cazy_id}."\t";}              else{ print STDOUT "NULL\t";}
+      if(exists $hash{$contig_id}{$gene_id}{cazy_mechanism}){       print STDOUT $hash{$contig_id}{$gene_id}{cazy_mechanism}."\t";}       else{ print STDOUT "NULL\t";}
+      if(exists $hash{$contig_id}{$gene_id}{'cazy_3D_structure'}){  print STDOUT $hash{$contig_id}{$gene_id}{'cazy_3D_structure'}."\t";}  else{ print STDOUT "NULL\t";}
+      if(exists $hash{$contig_id}{$gene_id}{cazy_main_activity}){   print STDOUT $hash{$contig_id}{$gene_id}{cazy_main_activity}."\t";}   else{ print STDOUT "NULL\t";}
+      if(exists $hash{$contig_id}{$gene_id}{cazy_activities}){      print STDOUT $hash{$contig_id}{$gene_id}{cazy_activities}."\t";}      else{ print STDOUT "NULL\t";}
       # Check if there is only one gene on contig (1 contig and 1 gene). If so and if taxonomy values of contigs are all to set to NULL, assign the gene taxonomy to contig taxonomy
       # TODO only output consensus taxonomy on the fly (directly in this script).
       #my $size = scalar keys %{ $hash_tax{$contig_id} };
