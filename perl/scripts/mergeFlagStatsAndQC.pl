@@ -6,6 +6,7 @@ use warnings;
 use Getopt::Long;
 use Iterator::FastaDb;
 use Iterator::FastqDb;
+use Data::Dumper;
 
 my $usage=<<'ENDHERE';
 NAME:
@@ -181,6 +182,10 @@ if($infilesBBdukSub){
         $prefix =~ s{\.[^.]+$}{};    # removes extension
         $prefix =~ s/\.ncontam_paired_sub_log\.txt//;
         $prefix =~ s/\.ncontam_paired_sub_log//;
+        $prefix =~ s/\.ncontam_paired_unmapped_log\.txt//;
+        $prefix =~ s/\.ncontam_paired_unmapped_log//;
+        $prefix =~ s/\.ncontam_paired_mapped_log\.txt//;
+        $prefix =~ s/\.ncontam_paired_mapped_log//;
         print STDERR "Name BBDUK subtract file: ".$prefix."\n";
 
        my $k = 0;
@@ -216,6 +221,8 @@ if($infilesBBdukSub){
        close(IN);
     }
 }
+
+#print STDERR Dumper(\%hash);
 
 print STDOUT "sampleName\trawFragments\tsurvivingFragments\tsurvivingFragments%\tsurvivingSingle\t";
 print STDOUT "contamQCedReads\tsubtractedReads\ttotalQCedReads\tratioQCedReads\tmapped\tmapped%\tproperlyPaired\tproperlyPaired%\n";
