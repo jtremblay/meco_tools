@@ -306,11 +306,20 @@ sub worker {
     close $FASTA_TEMP;
   
     ## LAUNCH THE RDP CLASSIFIER
-    my $cmd = "java -Xmx".$ram." -jar ".$rdp_classifier;
-    $cmd .= " -q ".$tmpdir."/temp_fasta_".$tid.".fasta";
+    my $cmd = "";
+    #if($legacy){
+    #    $cmd = "java -Xmx".$ram." -jar ".$rdp_classifier;
+    #    $cmd .= " -q ".$tmpdir."/temp_fasta_".$tid.".fasta";
+    #    $cmd .= " -o ".$outfile;
+    #    $cmd .= " -t ".$rdp_training_set;
+    #    $cmd .= " --minWords ".$minWords;
+    #}else{
+    $cmd = "java -Xmx".$ram." -jar ".$rdp_classifier;
     $cmd .= " -o ".$outfile;
     $cmd .= " -t ".$rdp_training_set;
     $cmd .= " --minWords ".$minWords;
+    $cmd .=" ".$tmpdir."/temp_fasta_".$tid.".fasta";
+    #}
     `$cmd  2>&1`;
     print STDERR $cmd."\n";
     $? != 0 ? die "command failed: $!\n" : print STDERR "RDP classifier (inside ParallelRDP.pl script) successfuly executed\n";  
