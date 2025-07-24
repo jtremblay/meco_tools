@@ -28,9 +28,8 @@ generateCPMsH5 <- function(infile, outfile){
     message("Generating CPMs.")
     cpms_matrix_delayed <- cpm(dge, normalized.lib.sizes=TRUE, log=FALSE)
     message("Rounding.")
-    #cpms_matrix_delayed <- round(cpms_matrix_delayed, digits=3)
     # Setup (before the loop)
-    output_file <- "merged_gene_abundance_cpm.tsv"
+    output_file <- outfile
     chunk_size <- 10000
 
     is_first_chunk <- TRUE
@@ -52,8 +51,8 @@ generateCPMsH5 <- function(infile, outfile){
                    file=output_file,
                    append=FALSE, # Overwrite/create file for the first chunk
                    sep="\t",
-                   row.names=FALSE, # Row names are now a column
-                   col.names=TRUE, # Include column names (header)
+                   row.names=FALSE,
+                   col.names=TRUE, 
                    quote=FALSE)
             is_first_chunk <- FALSE
         } else {
@@ -62,8 +61,8 @@ generateCPMsH5 <- function(infile, outfile){
                    file=output_file,
                    append=TRUE,
                    sep="\t",
-                   row.names=FALSE, # Row names are now a column
-                   col.names=FALSE, # IMPORTANT: Do NOT include column names again
+                   row.names=FALSE,
+                   col.names=FALSE,
                    quote=FALSE)
         }
     
