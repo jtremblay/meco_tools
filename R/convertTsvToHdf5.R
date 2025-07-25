@@ -16,11 +16,24 @@ convertTsvToHdf5 <- function(infile, outfile) {
     
     rownames(counts_matrix) <- gene_names
 
+    dims <- dim(counts_matrix)
+    n_rows <- dims[1]
+    n_cols <- dims[2]
+
+    # Choose a target chunk size (in number of elements). Adjust to your I/O needs.
+    target_chunk_elems <- 100000  # ~400 KB for integer data
+
+    # Compute chunk row size, default to full columns
+    chunk_rows <- min(n_rows, max(1, floor(target_chunk_elems / n_cols)))
+
+    # Construct chunkdim vector
+    chunkdim_auto <- c(chunk_rows, n_cols)
+
     writeHDF5Array(counts_matrix,
                filepath=outfile,
                name="counts",
                with.dimnames=TRUE,
-               chunkdim=c(10000, 10),
+               chunkdim=chunkdim_auto,
                level=6)
  
     print("Done converting table...")
