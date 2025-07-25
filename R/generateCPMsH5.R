@@ -44,6 +44,7 @@ generateCPMsH5 <- function(infile, outfile){
         current_chunk_dt <- as.data.table(current_chunk_rounded, keep.rownames = TRUE)
         # The 'keep.rownames = TRUE' will convert row names to a column named "rn" by default.
         # You might want to rename this column to "GeneID" or similar later if needed.
+        colnames(current_chunk_dt)[1] <- "feature_id"
     
         if(is_first_chunk){
             # Write the header and first batch of data
@@ -70,12 +71,6 @@ generateCPMsH5 <- function(infile, outfile){
         gc()
     }
 
-    # write to delayed array.
-    #writeHDF5Array(counts_matrix,
-    #           filepath=outfile_h5,
-    #           name="counts",
-    #           with.dimnames=TRUE)
- 
     print("Done normalizing table...")
 } 
 
