@@ -17,6 +17,8 @@ generate an abundance matrix.
 INPUT:
 --infiles <string> : bedtools .cov files, seperated by a ","
 --type <string>    : <contigs> or <genes>
+--min <int>        : will filter out genes or contigs having less than --min <int> total counts across all samples. 
+                     Default = 1.
 
 OUTPUT:
 STDOUT <string>    : abundance matrix. Columns = samples/lib, Rows = genes or contigs.
@@ -26,26 +28,28 @@ NOTES:
 BUGS/LIMITATIONS:
  
 AUTHOR/SUPPORT:
-
-Julien Tremblay - jtremblay514@gmail.com
+National Research Council Canada - Genomics and Microbiomes
+Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 
 ENDHERE
 
 ## OPTIONS
-my ($help, $infiles, $type);
+my ($help, $infiles, $type, $min);
 my $verbose = 0;
 
 GetOptions(
    'infiles=s' => \$infiles,
    'type=s'    => \$type,
+   'min=i'     => \$min,
    'verbose'   => \$verbose,
    'help'      => \$help
 );
 if ($help) { print $usage; exit; }
 
-die "--type must be equal to 'genes' or 'contigs'" if($type ne "contigs" and $type ne "genes");
+die "--type must be equal to 'genes' or 'contigs'" if($type ne "contigs" and $type ne "genes" and $type ne "feature_counts");
 
 ## MAIN
+$min = 1 unless($min);
 my @basenames;
 my %hash;
 my @infiles = split(/,/, $infiles);
@@ -79,14 +83,19 @@ if($type eq "genes"){
 
     print STDOUT "feature_id\t".join("\t", @basenames)."\n";
     for my $gene_id (keys %hash) {
-        print STDOUT $gene_id."\t";
         #print STDERR "===\n";
         #for my $sample (sort keys %{ $hash{$gene_id} }){
         #for my $sample (@basenames){
         #    #print STDERR $sample."\n";
         #    print STDOUT "\t".$hash{$gene_id}{$sample};
         #}
-        print STDOUT $hash{$gene_id}."\n";
+        # here we could put a filter in gene abundance. Like say only keep genes having total counts >= 10.
+        my @values = split(/\t/, $hash{$gene_id});
+        my $total = eval join '+', @values;
+        if($total >= $min){
+            print STDOUT $gene_id."\t";
+            print STDOUT $hash{$gene_id}."\n";
+        }
     }
 }elsif($type eq "contigs"){
     for my $infile (@infiles){
@@ -125,6 +134,45 @@ if($type eq "genes"){
         #    print STDOUT "\t".$hash{$gene_id}{$sample};
         #}
         print STDOUT $hash{$contig_id}."\n";
+    }
+}elsif($type eq "feature_counts"){
+    for my $infile (@infiles){
+        my $basename = $infile;
+        $basename =~ s{.*/}{};         # removes path  
+        $basename =~ s{\.[^.]+$}{};    # removes extension
+        print STDERR "Processing $infile\n";
+        push(@basenames, $basename);
+        open(IN, "<".$infile) or die "Can't open $infile\n";
+
+        while(<IN>){
+            chomp;
+            if($_ =~ m/^#/){ next; }
+            my @row = split(/\t/, $_);
+
+            #$hash{$row[3]}{$basename} = $row[4];
+            #To save memory, concatenate string.
+            if(exists($hash{$row[0]})){
+                $hash{$row[0]} = $hash{$row[0]}."\t".$row[6];
+            }else{
+                $hash{$row[0]} = $row[6];
+            }
+        }
+        close(IN);
+    }
+
+    #print STDERR Dumper(\%hash);
+    print STDERR join("\t", @basenames)."\n";
+
+    print STDOUT "feature_id\t".join("\t", @basenames)."\n";
+    for my $feature_id (keys %hash) {
+        print STDOUT $feature_id."\t";
+        #print STDERR "===\n";
+        #for my $sample (sort keys %{ $hash{$gene_id} }){
+        #for my $sample (@basenames){
+        #    #print STDERR $sample."\n";
+        #    print STDOUT "\t".$hash{$gene_id}{$sample};
+        #}
+        print STDOUT $hash{$feature_id}."\n";
     }
 }else{
     die "--type must be equal to 'genes' or 'contigs'\n";

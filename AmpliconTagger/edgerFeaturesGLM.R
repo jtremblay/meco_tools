@@ -14,19 +14,19 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
    removeSumZero = function(M) M[, colSums(abs(M)) != 0] 
  
    ## For debugging 
-   root                  = "/project/6004719/projects/GROW/Mesocosm_exp1/export/"
-   infile                = paste0(root, "gene_abundance/merged_gene_abundance.tsv")
+   #root                  = "/home/jtrembla/Projects/test_R_block_effects/"
+   #infile                = paste0(root, "feature_table_filtered_bacteriaArchaea.tsv")
    #designFile            = paste0(root, "design_file_AcBarrie.tsv")
-   mappingFile           = paste0(root, "mapping_file_DEG_CM1.tsv")
-   #outdir_intercept      = paste0(root, "/DDA_GLM_intercept/")
-   outdir                = paste0(root, "/DDA_GLM/")
+   #mappingFile           = paste0(root, "mapping_file2.tsv")
+   #outdir_intercept      = paste0(root, "/DOA_GLM_intercept/")
+   #outdir                = paste0(root, "/DOA_GLM/")
    #prefix                = "edger"
-   pvalue                = 0.05
-   fdr                   = 0.1
-   logfc                 = 1.0
-   blockColumnLabels     = "no"
-   treatmentColumnLabels = "Treatment1,Treatment2"
-   cutoff = 250
+   #pvalue                = 0.05
+   #fdr                   = 0.05
+   #logfc                 = 1.45
+   #blockColumnLabels     = "no"
+   #treatmentColumnLabels = "Treatment2"
+   #cutoff = 250
    cutoff = as.numeric(cutoff)
    pvalue = as.numeric(pvalue)
    fdr = as.numeric(fdr)
@@ -47,7 +47,7 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
    row.names(mapping_file) = mapping_file[,1]
    mapping_file[,1] = NULL
   
-   print(head(mapping_file))
+    print(head(mapping_file))
 
    # Check if supplied blockColumnLabels and treatmentColumns labels are present in mapping file.
    # Split blockColumnLabels and treatmentColumnsLabels by ','
@@ -72,11 +72,9 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
       }
    }
 
-   #26423794      191
    #load data and work the gene count table to make it compatible with edgeR
-   my_samples = unique(row.names(mapping_file))
-   header = as.character(read.table(infile, header=F, nrows=1))
-   tData = fread(infile, header=T, sep="\t", showProgress=T, select=c(header[1], my_samples))
+   #tData = fread(infile, header=T, skip="#FEATURE_ID", sep="\t", showProgress=FALSE)
+   tData = fread(infile, header=T, sep="\t", showProgress=FALSE)
    tData = data.frame(tData, check.names=FALSE)
    colnames(tData)[1] = "Symbol"
    tData2 = tData[, 2:ncol(tData)]
@@ -88,13 +86,21 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
    
    # Only keep rows that are actually in the mapping file.
    # So here order of sample IDs in mapping file is the same as sample IDs in tData2 (count table)
+   #tData2 = tData2[row.names(mapping_file)]
    tData2 = tData2[,colSums(tData2) >= cutoff]
    tData2 = tData2[is.element(colnames(tData2), row.names(mapping_file))]
    print(head(tData2))
    print(dim(tData2))
+   #tData2 = tData2 + 1
    # Also, in mapping_file : only keep samples that are present in feature table.
    mapping_file = mapping_file[is.element(row.names(mapping_file), colnames(tData2)),]
    
+   #print("row.names(mapping_file)")
+   #print(row.names(mapping_file))
+   #print("colnames(tData2)")
+   #print(colnames(tData2))
+   #print(paste0("block_columns:", block_columns))
+   #print(paste0("treatment_columns:", treatment_columns))
 
    # Their could be multiple 'treatment' columns.
    tData2 = removeSumZero(tData2) # Remove samples having zero counts!
@@ -102,7 +108,6 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
    #tData2 = tData2[tData2$filt>=3,] #the 2 is made up by me for the case of wanting 2 or more columns that are .005 or greater.  Change the 2 for your needs
    #tData2$filt<-NULL
    tData2 = tData2 + 1
-   
    for(curr_treatment_column in treatment_columns){
       print(paste0("Computing GLM for : ", curr_treatment_column))
       groups = mapping_file[[curr_treatment_column]]
