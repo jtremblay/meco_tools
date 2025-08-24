@@ -178,7 +178,7 @@ doDada2 <- function(indir, outdir, type, num_threads,
       # Filter and trim
       track = filterAndTrim(fwd=file.path(indir, fastqFs), filt=file.path(outdir_filt, fastqFs),
                     trimLeft=trimLeft.a, maxEE=maxEE.a, truncQ=truncQ.a, maxN=0, rm.phix=TRUE,
-                    compress=FALSE, verbose=TRUE, multithread=TRUE)
+                    compress=FALSE, verbose=TRUE, multithread=num_threads)
       write.table(track, paste0(outdir, "/filter_and_trim_stats.tsv"), sep="\t", quote=FALSE, col.names=NA)
       
       filtFs <- list.files(outdir_filt, pattern="_R1.fastq", full.names = TRUE)
@@ -229,7 +229,7 @@ doDada2 <- function(indir, outdir, type, num_threads,
       # Filter and trim
       track = filterAndTrim(rev=NULL, fwd=file.path(indir, fastqRs), filt=file.path(outdir_filt, fastqRs),
                     trimLeft=trimLeft.a, maxEE=maxEE.a, truncQ=truncQ.a, maxN=0, rm.phix=TRUE,
-                    compress=FALSE, verbose=TRUE, multithread=TRUE)
+                    compress=FALSE, verbose=TRUE, multithread=num_threads)
       write.table(track, paste0(outdir, "/filter_and_trim_stats.tsv"), sep="\t", quote=FALSE, col.names=NA)
       
       filtFs <- list.files(outdir_filt, pattern="_R2.fastq", full.names = TRUE)
