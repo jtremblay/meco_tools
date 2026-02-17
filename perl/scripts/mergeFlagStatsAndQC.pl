@@ -177,16 +177,17 @@ foreach my $file (@infilesBBduk){
 ## Infiles BBduk sub
 if($infilesBBdukSub){
     foreach my $file (@infilesBBdukSub){
-        my $prefix = $file;
-        $prefix =~ s{.*/}{};         # removes path  
-        $prefix =~ s{\.[^.]+$}{};    # removes extension
-        $prefix =~ s/\.ncontam_paired_sub_log\.txt//;
-        $prefix =~ s/\.ncontam_paired_sub_log//;
-        $prefix =~ s/\.ncontam_paired_unmapped_log\.txt//;
-        $prefix =~ s/\.ncontam_paired_unmapped_log//;
-        $prefix =~ s/\.ncontam_paired_mapped_log\.txt//;
-        $prefix =~ s/\.ncontam_paired_mapped_log//;
-        print STDERR "Name BBDUK subtract file: ".$prefix."\n";
+       my $prefix = $file;
+       $prefix =~ s{.*/}{};         # removes path  
+       $prefix =~ s{\.[^.]+$}{};    # removes extension
+       $prefix =~ s/\.ncontam_paired_sub_log\.txt//;
+       $prefix =~ s/\.ncontam_paired_sub_log//;
+       $prefix =~ s/\.ncontam_paired_unmapped_log\.txt//;
+       $prefix =~ s/\.ncontam_paired_unmapped_log//;
+       $prefix =~ s/\.ncontam_paired_mapped_log\.txt//;
+       $prefix =~ s/\.ncontam_paired_mapped_log//;
+       $prefix =~ s/\.ncontam_paired_mapping_stats_log//;
+       print STDERR "Name BBDUK subtract file: ".$prefix."\n";
 
        my $k = 0;
        open(IN, "<".$file) or die "Can't open $file\n";
@@ -244,7 +245,13 @@ for my $key (sort keys %hash) {
     }
     print STDOUT commify($hash{$key}{total_reads})."\t"; # reads that enter the mapping against ref step.
     # compute ratio QCed passed reads
-    my $ratio = $hash{$key}{total_reads} / ($hash{$key}{frag_surv} * 2) * 100;
+    # handle potential div by 0.
+    my $ratio = 0;
+    if($hash{$key}{frag_surv} == 0){
+        $ratio = $hash{$key}{total_reads} / (1 * 2) * 100;
+    }else{
+        $ratio = $hash{$key}{total_reads} / ($hash{$key}{frag_surv} * 2) * 100;
+    }
     $ratio = int($ratio);
     print STDOUT $ratio."%\t";
     print STDOUT commify($hash{$key}{mapped})."\t";
