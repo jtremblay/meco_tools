@@ -8,9 +8,6 @@ options(stringsAsFactors = FALSE)
 mergeHtseq <- function(infiles_htseq, outfileRaw, outfileNormalized) {
   library(edgeR)
   library(tools)
-  #infiles_htseq = "~/R/ctrl-IC-1.cov,~/R/ctrl-IC-2.cov,~/R/ctrl-IC-3.cov"
-  #outfileRaw = "~/R/outfile_raw.tsv"
-  #outfileNormalized = "~/R/outfile_cpm.tsv"
   
   files_htseq = unlist(strsplit(infiles_htseq, ","))
   

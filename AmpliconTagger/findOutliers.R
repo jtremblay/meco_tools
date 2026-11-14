@@ -9,12 +9,6 @@ findOutliers <- function(infile, prob, min_count) {
    options(stringsAsFactors = FALSE)
    library(outliers)
    library(data.table)
-   #data_file = "~/Projects/Yergeau/FE/16S/countReport.tsv"
-   #data_file = "~/Projects/Lallemand_AAD/countReport.tsv"
-   #data_file = "~/Projects/PascalDrouin/16S/countReport.tsv"
-   #infile = "~/build/misc_R_scripts/otu_table_filtered_bacteria.tsv"
-   #prob=0.995
-   #min_count=7000
    prob = as.numeric(prob)
    min_count = as.numeric(min_count)
 

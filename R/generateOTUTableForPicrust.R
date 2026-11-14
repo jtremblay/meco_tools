@@ -8,10 +8,6 @@ library(data.table)
 # Author: Julien Tremblay - jtremblay514@gmail.com
 generateOTUTableForPicrust <- function(infile_blast, infile_otu_table, outfile) {
    
-   #infile_blast = "~/Projects/picrust/blast.out.besthit"
-   #infile_otu_table = "~/Projects/picrust/otu_table.tsv"
-   #outfile = "~/Projects/picrust/otu_table_picrust.tsv"
-   
    tBlast = data.frame(fread(infile_blast, sep="\t", header=FALSE), check.names=FALSE)
    colnames(tBlast)[1] = "query"
    colnames(tBlast)[2] = "subject"

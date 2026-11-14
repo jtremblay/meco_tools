@@ -12,11 +12,6 @@ generatePlots <- function(infile, outdir, prefix, mappingFile) {
    library(grid)
    options(stringsAsFactors = FALSE)
    
-   #infile = "/home/jtrembla/Projects/testRPlots/otu_table_normalized_bacteriaArchaea_L6.txt"
-   #outdir = "/home/jtrembla/Projects/testRPlots/NRCan/"
-   #prefix = "test"
-   #mappingFile = "/home/jtrembla/Projects/testRPlots/mapping_file.tsv"
-  
    print(paste0("[DEBUG] infile: ",infile))
    print(paste0("[DEBUG] outdir: ",outdir))
    print(paste0("[DEBUG] prefix: ",prefix))

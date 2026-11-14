@@ -9,10 +9,6 @@ splitGeneAbundanceMatrix <- function(abundance_file, mapping_file, outdir) {
    options(stringsAsFactors = FALSE) 
    library(data.table)
    
-   #abundance_file = "~/Projects/DFO/microcosms/export/genes/merged_gene_abundance_10000.tsv"
-   #mapping_file = "~/Projects/DFO/microcosms/mapping_file.tsv"
-   #outdir = "~/Projects/DFO/microcosms/export/genes"
-   
    abundance = data.frame(fread(abundance_file, sep="\t", header=TRUE), check.names=FALSE)
    mapping = data.frame(fread(mapping_file, sep="\t", header=TRUE), check.names=FALSE)
    

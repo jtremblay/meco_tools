@@ -7,9 +7,6 @@ library(data.table)
 # Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 multiplyFeatureTable <- function(infile, outfile, m) {
    
-   #infile = "~/Projects/Lallemand_AAD/16S/export/feature_tables/feature_table_filtered.tsv"
-   #outfile = "~/Projects/Lallemand_AAD/16S/export/feature_tables/feature_table_filtered_x1000.tsv"
-   #m = 1000
    m = as.numeric(m)
    feature_table  = data.frame(fread(infile, sep="\t", header=TRUE, skip="#FEATURE_ID"), check.names=FALSE)
    feature_table2 = cbind(feature_table[,1], feature_table[,2:(ncol(feature_table)-1)] * m, feature_table[,ncol(feature_table)])

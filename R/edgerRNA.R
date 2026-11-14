@@ -76,15 +76,7 @@ performEdger <- function(infile, outdir, designFile, pvalue, fdr, logfc) {
 
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/test_MT/merged_abundance_htseq.tsv"
-   #designFile = "~/Projects/test_MT/design_file.tsv"
-   #outdir = "~/Projects/test_MT"
    prefix = "edger"
-   #pvalue = 0.05
-   #fdr = 0.05
-   #logfc = 1.5
-   #designFile = "~/Projects/metagenome_stats/design_file_parsed.tsv"
-   #infile_normalized = "~/Projects/metagenome_stats/merged_gene_abundance_50000_normalized.tsv"
   
    print(paste0("[DEBUG] infile: ",infile))
    print(paste0("[DEBUG] outdir: ",outdir))

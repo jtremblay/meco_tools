@@ -7,9 +7,6 @@
 options(stringsAsFactors = FALSE)
 mergeTables <- function(infiles_htseq, infiles_cov, outfileRaw, outfileNormalized) {
   
-  #infiles_htseq = "~/Projects/test_MT/395160.htseq,~/Projects/test_MT/395161.htseq"
-  #infiles_cov = "~/Projects/test_MT/395160.genes.cov,~/Projects/test_MT/395161.genes.cov"
-  
   files_htseq = unlist(strsplit(infiles_htseq, ","))
   #files_cov = unlist(strsplit(infiles_cov, ","))
   

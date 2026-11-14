@@ -48,7 +48,6 @@ my $table_seq = &fasta_table($file,$cov);
 # find unique
 #my @seqs=`awk -F"\t" '{print \$2}' $table_seq | sort -r | uniq`; 
 #my $tmpsort = "${o_path}sort" . time();
-#my $tmpsort = "/projectb/scratch/bfoster/tmp/" . basename("$output") . ".derepSort." . time();
 my $tmpsort = File::Temp->newdir(
     "dereplicateContigsXXXXXXX",
     DIR => $TMPDIR."/",

@@ -13,17 +13,6 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
    options(stringsAsFactors = FALSE)  
    removeSumZero = function(M) M[, colSums(abs(M)) != 0] 
  
-   ## For debugging 
-   #root                  = "/project/6004719/projects/GROW/Mesocosm_exp1/export/"
-   #infile                = paste0(root, "gene_abundance/merged_gene_abundance.tsv")
-   #mappingFile           = paste0(root, "mapping_file_DEG_CM1.tsv")
-   #outdir                = paste0(root, "/DDA_GLM/")
-   #pvalue                = 0.05
-   #fdr                   = 0.1
-   #logfc                 = 1.0
-   #blockColumnLabels     = "no"
-   #treatmentColumnLabels = "Treatment1,Treatment2"
-   #cutoff = 150
    cutoff = as.numeric(cutoff)
    pvalue = as.numeric(pvalue)
    fdr = as.numeric(fdr)

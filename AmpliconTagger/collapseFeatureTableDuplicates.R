@@ -11,9 +11,6 @@ library(dplyr)
 # Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 collapseFeatureTableDuplicates <- function(infile, outfile) {
   
-  #infile = "~/build/misc/feature_table_greengenes.tsv"
-  #outfile = "~/build/misc/feature_table_greengenes_nodups.tsv"
-  
   feature_table = data.frame(fread(infile, sep="\t", header=TRUE, skip="#FEATURE_ID"), check.names=FALSE)
   colnames(feature_table)[1] = "feature_id"
   

@@ -15,10 +15,6 @@ generateAlphaDivPlots <- function(infile, outdir, prefix, mappingFile) {
    library(data.table)
    .e <- environment()
 
-   #infile = "~/Projects/R_debug/alpha_richness.tsv"
-   #mappingFile = "~/Projects/R_debug/mapping_file.tsv"
-   #outdir = "~/Projects/R_debug/"
-   #prefix = "observedFeatures"
    read_depth = as.character(1000)
    
    alpha_div = data.frame(fread(infile, sep="\t", header=T, fill=TRUE), check.names=FALSE)

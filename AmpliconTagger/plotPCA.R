@@ -12,11 +12,6 @@ generatePlots <- function(infile, outdir, prefix, mappingFile) {
    library(grid)
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/testRPlots/unweighted_unifrac_feature_table_final_normalized_coords.tsv"
-   #outdir = "~/Projects/testRPlots/"
-   #prefix = "pca-test"
-   #mappingFile = "~/Projects/testRPlots/mapping_file_DFO.tsv"
-  
    print(paste0("[DEBUG] infile: ",infile))
    print(paste0("[DEBUG] outdir: ",outdir))
    print(paste0("[DEBUG] prefix: ",prefix))

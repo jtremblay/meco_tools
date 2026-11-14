@@ -14,11 +14,6 @@ generatePcoAPlots <- function(indir, mappingFile, outdir) {
    
   options(stringsAsFactors = FALSE)
    
-  #root        = "~/Projects/test_MT"
-  #infile      = paste0(root, "/merged_gene_abundance_cpm.tsv")
-  #mappingFile = paste0(root, "/mapping_file.tsv")
-  #outdir      = paste0(root, "/out_pcoa/")
-  
   dir.create(file.path(outdir), showWarnings=FALSE)
   
   print(paste0("[DEBUG] infile: ", infile))

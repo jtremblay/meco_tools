@@ -13,10 +13,6 @@ generatePlots <- function(indir, prefix, mappingFile) {
    
   options(stringsAsFactors = FALSE)
   
-  #indir = "~/Projects/metagenome_stats/"
-  #prefix = "_normalized.tsv"
-  #mappingFile = "~/Projects/metagenome_stats/mapping_file2.tsv"
-  
   print(paste0("[DEBUG] indir: ",indir))
   print(paste0("[DEBUG] prefix: ",prefix))
   print(paste0("[DEBUG] prefix: ",mappingFile))
@@ -29,10 +25,6 @@ generatePlots <- function(indir, prefix, mappingFile) {
   print(files)
   
   for(y in files){
-     ###
-     #y = "~/Projects/testRPlots/diesel_VS_octacosane_normalized.tsv"
-     #mappingFile = "~/Projects/testRPlots/mapping_file.tsv"
-     ###
     tData = read.table(y, header=TRUE, sep="\t", check.names=FALSE, row.names=1)
     tData = data.frame(tData, check.names=FALSE)
     print(head(tData))

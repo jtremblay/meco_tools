@@ -44,14 +44,6 @@ indir               = args[5]
 outdir              = args[6]
 infiles_genes_lists = args[7]
 
-#cutoff_logFC = 1.5
-#infile_abundance = "~/Projects/Alkanindiges/DEG_normalized_significant.tsv"
-#infile_annotations = "~/Projects/Alkanindiges/annotations.tsv"
-#infile_mapping = "~/Projects/Alkanindiges/mapping_file.tsv"
-#indir = "/home/jtrembla/Projects/Alkanindiges/DEG"
-#outdir = "~/Projects/Alkanindiges/metatranscriptomics_R_exploratory_pipeline/"
-#infiles_genes_lists = "/home/jtrembla/Projects/Alkanindiges/gene_list_all.txt"
-
 print(paste0("LogFC cutoff:", cutoff_logFC))
 print(infile_abundance)
 print(infile_annotations)
@@ -63,14 +55,6 @@ print(infiles_genes_lists)
 dir.create(file.path(outdir), showWarnings = FALSE)
 files = list.files(path=indir, pattern="_edger_annotated.tsv", recursive=TRUE, full.names=TRUE)
 
-#genes_lists = c(
-#   #"/home/jtrembla/Projects/ESRF/list/list_alkane_mono.tsv",
-#   #"/home/jtrembla/Projects/ESRF/list/list_nahpthlane_diox.tsv",
-#   #"/home/jtrembla/Projects/ESRF/list/list_P450.tsv",
-#   #"/home/jtrembla/Projects/ESRF/list/list_ring_hydroxyl_diox.tsv",
-#   #"/home/jtrembla/Projects/ESRF/list/list_cyp153.tsv"
-#   "/home/jtrembla/Projects/ESRF/list/list_nitrogen_cycle.tsv"
-#)
 genes_lists = unlist(strsplit(infiles_genes_lists, ","))
 
 # For col annotations

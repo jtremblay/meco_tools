@@ -15,11 +15,6 @@ generatePlots <- function(infile, outdir, abundance_cutoff) {
    options(stringsAsFactors = FALSE)
    
    
-   #infile = "~/Projects/networks/otu_table_filtered_bacteriaArchaea_normalized.tsv"
-   #outdir = "/home/jtrembla/Projects/networks/"
-   #prefix = basename(file_path_sans_ext(infile))
-   #abundance_cutoff = 1 #between 1 and 3 idealy...
-  
    print(paste0("[DEBUG] infile: ",infile))
    print(paste0("[DEBUG] outdir: ",outdir))
    print(paste0("[DEBUG] prefix: ",prefix))

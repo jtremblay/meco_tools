@@ -45,11 +45,6 @@ def main(arguments):
     pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
     fh_log = open(os.path.join(outdir, "ancom_log.txt"), "w")
 
-    # for test:
-    #otu_table_file = '~/Projects/Lallemand_AAD/16S/export/otu_tables/otu_table_filtered.tsv'
-    #mapping_file = '~/Projects/Lallemand_AAD/16S/export/mapping_file.tsv'
-    #outdir = '/home/jtrembla/Projects/Lallemand_AAD/16S/ancomp'
-    #variable = 'Treatment'
     pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
 
     # Read OTU table
