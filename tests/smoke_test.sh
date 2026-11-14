@@ -10,17 +10,6 @@ fail=0
 pass() { printf '  ok    %s\n' "$1"; }
 bad()  { printf '  FAIL  %s\n' "$1"; fail=1; }
 
-# Known-broken Perl scripts (pre-existing, unrelated to the image). Reported, not failed.
-#  - depend on modules not shipped in this repository (JGI::Bio::Iterator::FastaDb, SampleSheet):
-#      jgi_blast_primer_on_db.pl getSubsetFromSampleSheet.pl flashWrapper.pl
-#  - unfinished stubs with source errors (undeclared variables under strict, syntax errors):
-#      binsUtilsExonerate.pl extractKeggSequencesByPathways.pl generateKeggModuleMatrix.pl
-#      getKeggK.pl script_template.pl splitBammCoverages.pl ublastWrapper.pl
-KNOWN_BROKEN_PERL="jgi_blast_primer_on_db.pl getSubsetFromSampleSheet.pl flashWrapper.pl
-  binsUtilsExonerate.pl extractKeggSequencesByPathways.pl generateKeggModuleMatrix.pl
-  getKeggK.pl script_template.pl splitBammCoverages.pl ublastWrapper.pl"
-KNOWN_BROKEN_PERL=" $(echo $KNOWN_BROKEN_PERL) "
-
 echo "== runtimes"
 if command -v python2 >/dev/null || ls /opt/conda/bin/python2* >/dev/null 2>&1; then bad "python2 present"; else pass "no python2"; fi
 python --version 2>&1 | grep -q '^Python 3\.' && pass "$(python --version 2>&1)" || bad "python is not python3"
@@ -35,14 +24,12 @@ done
 pass "no external bioinformatics tools found"
 
 echo "== perl: compile every script (resolves all 'use' statements)"
-n=0; known=0
+n=0
 for f in "$ROOT"/AmpliconTagger/*.pl "$ROOT"/perl/scripts/*.pl; do
-  name=$(basename "$f")
-  if out=$(perl -c "$f" 2>&1); then n=$((n+1)); continue; fi
-  if [[ " $KNOWN_BROKEN_PERL " == *" $name "* ]]; then known=$((known+1)); printf '  known %s: %s\n' "$name" "$(echo "$out" | head -1 | cut -c1-100)"
-  else bad "$name: $(echo "$out" | grep -m1 -E "Can't locate|error|syntax" | cut -c1-160)"; fi
+  if out=$(perl -c "$f" 2>&1); then n=$((n+1))
+  else bad "$(basename "$f"): $(echo "$out" | grep -m1 -E "Can't locate|error|syntax|Global symbol" | cut -c1-160)"; fi
 done
-pass "$n perl scripts compile ($known known-broken)"
+pass "$n perl scripts compile"
 
 echo "== python: compile every script and import its third-party modules"
 python - "$ROOT" <<'EOF' || fail=1
