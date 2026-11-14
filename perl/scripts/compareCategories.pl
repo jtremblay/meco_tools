@@ -71,12 +71,12 @@ foreach(@factors){
    my $variable = $_;
    print STDERR $variable."\n" if($verbose);
    #print STDERR "memtime compare_categories.py --method adonis -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/adonis_$variable/\n";
-   system("memtime compare_categories.py --method adonis -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/adonis_$variable/");
-   system("memtime compare_categories.py --method anosim -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/anosim_$variable/");
-   system("memtime compare_categories.py --method mrpp -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/mrpp_$variable/");
-   system("memtime compare_categories.py --method permanova -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/permanova_$variable/");
-   system("memtime compare_categories.py --method permdisp -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/permdisp_$variable/");
-   system("memtime compare_categories.py --method dbrda -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/dbrda_$variable/");
+   system("compare_categories.py --method adonis -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/adonis_$variable/");
+   system("compare_categories.py --method anosim -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/anosim_$variable/");
+   system("compare_categories.py --method mrpp -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/mrpp_$variable/");
+   system("compare_categories.py --method permanova -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/permanova_$variable/");
+   system("compare_categories.py --method permdisp -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/permdisp_$variable/");
+   system("compare_categories.py --method dbrda -i $infile -m $mapping_file -c $variable -n 999 -o $tmpdir/dbrda_$variable/");
 
    system("echo  > $outdir/$variable.txt");
    system("echo '=================ADONIS=======================\n' >> $outdir/$variable.txt");
