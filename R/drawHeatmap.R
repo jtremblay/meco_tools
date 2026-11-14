@@ -11,10 +11,6 @@ drawHeatmap <- function(indir, mappingFile, prefix) {
    
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/metagenome_stats/DDA_kegg_parsed.tsv"
-   #outdir = "~/Projects/metagenome_stats/"
-   #mappingFile = "~/Projects/metagenome_stats/mapping_file2.tsv"
-   
    # Mapping file
    mapping_file = read.table(mappingFile, sep="\t", colClasses = "character")
    header = read.table(mappingFile, sep="\t", nrows=1, comment.char="")

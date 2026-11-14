@@ -8,9 +8,6 @@ performEdgerSingle <- function(infile, outfile) {
 
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/metagenome_stats/merged_gene_abundance_50000.tsv"
-   #outfile = "~/Projects/metagenome_stats/merged_gene_abundance_50000_normalized.tsv"
-   
    print(paste0("[DEBUG] infile: ", infile))
    print(paste0("[DEBUG] outdir: ", outfile))
    

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Takes input in blastp against kegg database. (parsed output that is...)
 and an abundance (gene count) table and output a Kxxxx abundance table.

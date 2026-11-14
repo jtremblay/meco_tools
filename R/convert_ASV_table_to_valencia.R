@@ -10,10 +10,6 @@ convertASVTableToValencia <- function(infile, outfile) {
     library(data.table)
     library(dplyr)
     
-    #outdir = "/project/6049199/projects/p110/FLO/"
-    #setwd("/project/6049199/projects/p110/FLO/")
-    #infile = "./amplicontagger/reads_12/feature_tables/feature_table_filtered_bacteriaArchaea_species.tsv"
-    
     processTaxonomicLineages <- function(asv_table, summarize_lineage, tax_level="L6_only"){
       if(!is.logical(summarize_lineage)){
         stop("summarize_lineage variable needs to be a boolean (TRUE or FALSE)")

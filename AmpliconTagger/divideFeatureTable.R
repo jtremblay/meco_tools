@@ -7,9 +7,6 @@ library(data.table)
 # Author: Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 multiplyFeatureTable <- function(infile, outfile, m) {
    
-   #infile = "~/Projects/Lallemand_AAD/16S/export/otu_tables/otu_table_filtered.tsv"
-   #outfile = "~/Projects/Lallemand_AAD/16S/export/otu_tables/otu_table_filtered_x1000.tsv"
-   #m = 1000
    m = as.numeric(m)
    otu_table  = data.frame(fread(infile, sep="\t", header=TRUE, skip="#FEATURE_ID"), check.names=FALSE)
    otu_table2 = cbind(otu_table[,1], otu_table[,2:(ncol(otu_table)-1)] / m, otu_table[,ncol(otu_table)])

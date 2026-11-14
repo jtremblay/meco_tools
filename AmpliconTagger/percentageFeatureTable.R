@@ -6,8 +6,6 @@ library(data.table)
 # Author: Julien Tremblay - jtremblay514@gmail.com
 percentageFeatureTable <- function(infile, outfile, m) {
    
-    #infile = "~/Projects/Lallemand_AAD/16S/export/otu_tables/otu_table_filtered.tsv"
-    #outfile = "~/Projects/Lallemand_AAD/16S/export/otu_tables/otu_table_filtered_x1000.tsv"
     # Here, we assume we have a header.
     df = data.frame(fread(infile, sep="\t", header=T), check.names=F)
     head(df)

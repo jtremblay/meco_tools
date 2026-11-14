@@ -9,9 +9,6 @@ performNormalizationFeatures <- function(infile, outfile, abundance_cpm) {
 
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/testRPlots/otu_table.tsv"
-   #outfile = "~/Projects/testRPlots/otu_table_bacteriaArchaea_norm.tsv"
-         
    print(paste0("[DEBUG] infile: ", infile))
    print(paste0("[DEBUG] outdir: ", outfile))
    

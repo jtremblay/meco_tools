@@ -8,10 +8,7 @@ performEdger <- function(infile, outdir, designFile) {
 
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/metagenome_stats/merged_gene_abundance_50000.tsv"
-   #outdir = "~/Projects/metagenome_stats"
    prefix = "edger"
-   #designFile = "~/Projects/metagenome_stats/design_file_parsed.tsv"
   
    print(paste0("[DEBUG] infile: ",infile))
    print(paste0("[DEBUG] outdir: ",outdir))

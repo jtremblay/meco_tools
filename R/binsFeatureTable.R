@@ -6,12 +6,6 @@ binsFeatureTable <- function(summarized_bins_file, parsed_bins_file, abundance_f
    library(data.table)
    options(stringsAsFactors = FALSE)
    
-   #root = "/home/jtrembla/Projects/ESRF/dec2015/bins/"
-   #summarized_bins_file = paste0(root, "summarized_bins.tsv")
-   #parsed_bins_file = paste0(root, "parsed_bins.tsv")
-   #abundance_file = paste0(root, "merged_contigs_abundance_cpm.tsv")
-   #outfile = paste0(root, "otu_table_bins.tsv")
-   
    vColors = c('#00FF00','#FF8080','#FF00FF','#0000FF','#808282','#CCFFFF','#CCFFCC','#99CCFF','#CC99FF','#FFCC99','#3366FF','#33CCCC','#99CC00','#FF99CC','#FFCC00')
    vColors = c("#0000CD","#00FF00","#FF0000","#808080","#000000","#B22222","#40E0D0","#DAA520","#DDA0DD","#FF00FF","#00FFFF","#4682B4","#008000","#E6E6FA","#FF8C00","#80008B","#8FBC8F","#00BFFF","#FFFF00","#808000")
    

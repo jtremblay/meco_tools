@@ -8,10 +8,6 @@ options(stringsAsFactors = FALSE)
 library(data.table)
 parseDistanceMatrix <- function(infile, outfile, samples) {
    
-   #infile =  "~/build/misc_R_scripts/weighted_unifrac_otu_table_final_rarefied.txt"
-   #outfile = "~/build/misc_R_scripts/weighted_unifrac_otu_table_final_rarefied_parsed.txt"
-   #samples = "~/build/misc_R_scripts/samples_home_microbiome.txt"
-   
    df = data.frame(fread(infile), check.names=FALSE)
    row.names(df) = df$V1
    df$V1 = NULL

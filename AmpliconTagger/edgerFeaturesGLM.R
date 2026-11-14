@@ -13,20 +13,6 @@ performEdgerGLMFeatures <- function(infile, outdir, mappingFile, pvalue, fdr, lo
    options(stringsAsFactors = FALSE)  
    removeSumZero = function(M) M[, colSums(abs(M)) != 0] 
  
-   ## For debugging 
-   #root                  = "/home/jtrembla/Projects/test_R_block_effects/"
-   #infile                = paste0(root, "feature_table_filtered_bacteriaArchaea.tsv")
-   #designFile            = paste0(root, "design_file_AcBarrie.tsv")
-   #mappingFile           = paste0(root, "mapping_file2.tsv")
-   #outdir_intercept      = paste0(root, "/DOA_GLM_intercept/")
-   #outdir                = paste0(root, "/DOA_GLM/")
-   #prefix                = "edger"
-   #pvalue                = 0.05
-   #fdr                   = 0.05
-   #logfc                 = 1.45
-   #blockColumnLabels     = "no"
-   #treatmentColumnLabels = "Treatment2"
-   #cutoff = 250
    cutoff = as.numeric(cutoff)
    pvalue = as.numeric(pvalue)
    fdr = as.numeric(fdr)

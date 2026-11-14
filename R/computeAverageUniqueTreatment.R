@@ -9,10 +9,6 @@ library(data.table)
 # mapping file has to have a column UniqueTreatment
 computeAverageFromMergedAbundance <- function(abundance_file, mapping_file, outfile) {
    # Read annotations and associate KO with each gene_id (if available)
-   #root = "~/Projects/PascalDrouinMG/export/"
-   #abundance_file = paste0(root, "/genes/merged_gene_abundance_cpm.tsv")
-   #mapping_file = paste0(root, "/mapping_file.tsv")
-   #outfile = paste0(root, "/genes/merged_gene_abundance_cpm_means.tsv")
    
    # Load abundance
    abundance = data.frame(fread(abundance_file, sep="\t", header=TRUE), check.names=FALSE)

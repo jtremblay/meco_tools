@@ -15,12 +15,6 @@ makeplots <- function(Feature_table, outdir, prefix, n, mappingFile) {
   outfilePng = paste0(outdir,'/', prefix, '.png')
   outfilePdf = paste0(outdir,'/', prefix, '.pdf')
 
-  #======
-  #filename = "~/Projects/heatmap_R/feature_table_filtered_rarefied.tsv"
-  #mappingFile = "~/Projects/heatmap_R/mapping_file.txt"
-  #n=15
-  #======
-  
   # Process mapping file
   mapping_file = read.table(mappingFile, sep="\t")
   header = read.table(mappingFile, sep="\t", nrows=1, comment.char="")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Takes input in blastp against kegg database. (parsed output that is...)
 and an abundance (gene count) table and output a Kxxxx abundance table.
@@ -45,11 +45,14 @@ def main(arguments):
     #get_all_files(q, matches, indir, infile_blastp)
     #num_threads = 11
     p = multiprocessing.Pool(num_threads)
+    results = []
     for match in matches:
-        p.apply_async(do_work, [match, indir, infile_blastp])
+        results.append(p.apply_async(do_work, [match, indir, infile_blastp]))
     
     p.close()
     p.join()
+    for r in results:
+        r.get()
 
     
 def do_work(match, indir, infile_blastp):    
@@ -109,9 +112,9 @@ def do_work(match, indir, infile_blastp):
     
     gene_abundance_dict2 = gene_abundance_dict.copy()
     #once blastp file has been parsed, loop through its hash_ko.
-    for ko in hash_ko.iterkeys():
+    for ko in hash_ko.keys():
         # get gene id
-        gene_ids = map(str, hash_ko[ko])
+        gene_ids = list(map(str, hash_ko[ko]))
         # then add all rpkm values in gene_abundance_dict
         list_of_lists = []
     
@@ -120,7 +123,7 @@ def do_work(match, indir, infile_blastp):
         for gene_id in gene_ids:
             if gene_id in gene_abundance_dict.keys():
                 #print gene_id
-                curr_list = map(float, gene_abundance_dict[gene_id])
+                curr_list = list(map(float, gene_abundance_dict[gene_id]))
                 #del gene_abundance_dict[gene_id] # delete element found, because in the end, we'll print all elements not found.
                 list_of_lists.append(curr_list)
                 
@@ -156,11 +159,11 @@ def do_work(match, indir, infile_blastp):
     
     # Finally print gene_ids not found (not ided by blastp).
     for gene_id in gene_abundance_dict2:
-        curr_value = map(float, gene_abundance_dict[gene_id])
+        curr_value = list(map(float, gene_abundance_dict[gene_id]))
         ## Still not sure if we should print values without annotation... For now we won't...
         #print gene_id + "_NULL_KEGG\t" + "\t".join(map(str, curr_value))
     
-    OUT.close
+    OUT.close()
     #q.task_done()
 
 if __name__ == '__main__':

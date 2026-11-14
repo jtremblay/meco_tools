@@ -7,10 +7,6 @@
 options(stringsAsFactors = FALSE)
 generateCPMs <- function(infile, outfile, skip_norm_factors) {
   
-  #infile = "/project/6049199/projects/mock_community_shotgunMG/contig_abundance/merged_contig_abundance.tsv"
-  #outfile = "/project/6049199/projects/mock_community_shotgunMG/contig_abundance/merged_contig_abundance_cpm.tsv"
-  #skip_norm_factors = "FALSE"
-    
   library(edgeR)
   library(data.table)
 

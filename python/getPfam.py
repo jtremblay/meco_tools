@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Takes input in hmmsearch of genes vs pfam-A db. (parsed output that is...)
 and an abundance (gene count) table and output a PFAM domain abundance table.
@@ -39,7 +39,7 @@ def main(arguments):
 
     hash_pfam = defaultdict(list)
     hash_genes = defaultdict(list)
-    p = re.compile("(PF\d+\.\d+)")
+    p = re.compile(r"(PF\d+\.\d+)")
 
     for row in reader:
         if "#" not in row:

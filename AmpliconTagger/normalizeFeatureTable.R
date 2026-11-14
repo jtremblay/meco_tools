@@ -11,12 +11,6 @@ performNormalizationFeatures <- function(infile, outfile, cutoff) {
 
    options(stringsAsFactors = FALSE)
    
-   #infile = "~/Projects/test_edger_Features/feature_table_filtered_bacteriaArchaea.tsv"
-   #outfile = "~/Projects/test_edger_Features/feature_table_filtered_bacteriaArchaea_norm.tsv"
-   #outfile = "~/Projects/testRPlots/feature_table_bacteriaArchaea_norm.tsv"
-   #cutoff = as.numeric(250)
-   #multiplier = as.numeric(100000000)
-   
    cutoff = as.numeric(cutoff)
    #multiplier = as.numeric(multiplier)
          

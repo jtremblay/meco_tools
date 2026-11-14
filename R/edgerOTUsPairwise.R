@@ -8,15 +8,6 @@ performEdgerPairwiseOTUs <- function(infile, outdir, designFile, pvalue, fdr, lo
 
    options(stringsAsFactors = FALSE)
    
-   #root       = "/home/jtrembla/Projects/test_edger_OTUs"
-   #infile     = paste0(root, "/otu_table_filtered_bacteriaArchaea.tsv")
-   #designFile = paste0(root, "/design_file2.tsv")
-   #outdir     = paste0(root, "/DOA_pairwise")
-   #prefix     = "edger_otu"
-   #pvalue     = 0.15
-   #fdr        = 0.15
-   #logfc      = 1.1
-     
    print(paste0("[DEBUG] infile: ",infile))
    print(paste0("[DEBUG] outdir: ",outdir))
    print(paste0("[DEBUG] design_file: ",designFile))

@@ -9,9 +9,6 @@ splitBammCoverage <- function(infile, outfile) {
   library(data.table)
   library(tools)
 
-  #infile = "~/Projects/R/tmp.txt"
-  #outdir = "~/Projects/R"
-  
   tData = data.frame(fread(infile), check.names=FALSE)
   
   for(i in 3:ncol(tData)){
