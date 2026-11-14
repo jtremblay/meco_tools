@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Takes input in blastp against kegg database. (parsed output that is...)
 and an abundance (gene count) table and output a Kxxxx abundance table.
@@ -39,7 +39,7 @@ def main(arguments):
 
     hash_cog = defaultdict(list)
     hash_genes = defaultdict(list)
-    p = re.compile("^.*(COG\d+),.*")
+    p = re.compile(r"^.*(COG\d+),.*")
 
     for row in reader:
         gene_id      = row[0]

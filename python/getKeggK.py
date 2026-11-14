@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Takes input in blastp against kegg database. (parsed output that is...)
 and an abundance (gene count) table and output a Kxxxx abundance table.
@@ -86,12 +86,12 @@ def main(arguments):
     
     sys.stderr.write("Completed hashing gene abundance table\n")
     
-    print header
+    print(header)
 
     #once blastp file has been parsed, loop through its hash_ko.
-    for ko in hash_ko.iterkeys():
+    for ko in hash_ko.keys():
         # get gene id
-        gene_ids = map(str, hash_ko[ko])
+        gene_ids = list(map(str, hash_ko[ko]))
         # then add all values in gene_abundance_dict
         #sys.stderr.write("gene_ids: " + str(gene_ids) + "\n")
         list_of_lists = []
@@ -103,7 +103,7 @@ def main(arguments):
         for gene_id in gene_ids:
             #if gene_id in gene_abundance_dict.keys():
             #print gene_id
-            curr_list = map(float, gene_abundance_dict[gene_id])
+            curr_list = list(map(float, gene_abundance_dict[gene_id]))
             #sys.stderr.write("curr_list inside : " + str(curr_list) + "\n")
             # make sure that curr list is not empty. Faster to check empty list than to check for existence of key in huge hash.
             if len(curr_list) != 0:
@@ -131,14 +131,14 @@ def main(arguments):
             #    k = k + 1
 
             sys.stdout.write(ko + "\t")
-            print "\t".join(map(str, curr_sum))
+            print("\t".join(map(str, curr_sum)))
             #print "\t".join(str(curr_sum)[0])
         else:
             if not curr_list:
                 x=1
             else:
                 sys.stdout.write(ko + "\t")
-                print "\t".join(map(str, curr_list))
+                print("\t".join(map(str, curr_list)))
 
     # Finally print gene_ids not found (not ided by blastp).
     #for gene_id in gene_abundance_dict2:

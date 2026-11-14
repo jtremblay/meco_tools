@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 Automatically estimate insert size of the paired-end reads for a given SAM/BAM file.
 Usage: getinsertsize.py <SAM file> or samtools view <BAM file> | getinsertsize.py -
@@ -43,7 +43,7 @@ def getmeanval(dic,maxbound=-1):
   return (meanv,varv);
 
 objmrl=re.compile('([0-9]+)M$');
-objmtj=re.compile('NH:i:(\d+)');
+objmtj=re.compile(r'NH:i:(\d+)');
 
 nline=0;
 for lines in args.SAMFILE:

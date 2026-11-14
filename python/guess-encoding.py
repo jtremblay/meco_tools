@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
    awk 'NR % 4 == 0' your.fastq | python %prog [options]
@@ -39,7 +39,7 @@ def main():
                  type='int', default=-1)
 
     opts, args = p.parse_args()
-    print >>sys.stderr, "# reading qualities from stdin"
+    print("# reading qualities from stdin", file=sys.stderr)
     gmin, gmax  = 99, 0
     valid = []
     for i, line in enumerate(sys.stdin):
@@ -48,17 +48,17 @@ def main():
             gmin, gmax = min(lmin, gmin), max(lmax, gmax)
             valid = get_encodings_in_range(gmin, gmax)
             if len(valid) == 0:
-                print >>sys.stderr, "no encodings for range: %s" % str((gmin, gmax))
+                print("no encodings for range: %s" % str((gmin, gmax)), file=sys.stderr)
                 sys.exit()
             if len(valid) == 1 and opts.n == -1:
-                print "\t".join(valid) + "\t" + str((gmin, gmax))
+                print("\t".join(valid) + "\t" + str((gmin, gmax)))
                 sys.exit()
 
         if opts.n > 0 and i > opts.n:
-            print "\t".join(valid) + "\t" + str((gmin, gmax))
+            print("\t".join(valid) + "\t" + str((gmin, gmax)))
             sys.exit()
 
-    print "\t".join(valid) + "\t" + str((gmin, gmax))
+    print("\t".join(valid) + "\t" + str((gmin, gmax)))
 
 
 if __name__ == "__main__":

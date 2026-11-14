@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Software to build and access metagenomic data in a hdf5 database.
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """A simple python script template.
 
@@ -18,16 +18,16 @@ def main(arguments):
      
     args = parser.parse_args(arguments)
     infile = os.path.abspath(args.infile.name)
-    print infile
+    print(infile)
      
-    print args
+    print(args)
 
     fhand = open(infile)
     count = 0
     for line in fhand:
         count = count + 1
         row = line.split("\t")
-        print 'Line Count:', count
+        print('Line Count:', count)
 
 
      

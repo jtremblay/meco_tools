@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """Takes input in blastp against kegg database. (parsed output that is...)
 and an abundance (gene count) table and output a KEGG-module abundance table.
@@ -41,7 +41,7 @@ def main(arguments):
   
     hash_modules.pop('NULL', None)
     sys.stdout.write("gene_id")
-    for key in sorted(hash_modules.iterkeys()):
+    for key in sorted(hash_modules.keys()):
         sys.stdout.write("\t" + key)
     sys.stdout.write("\n")
    
@@ -59,12 +59,12 @@ def main(arguments):
         for module_id in module_ids:
             hash_ko[gene_id].append(module_id)
 
-        for gene_id in hash_ko.iterkeys():
+        for gene_id in hash_ko.keys():
             # get gene id
-            module_ids = map(str, hash_ko[gene_id])
+            module_ids = list(map(str, hash_ko[gene_id]))
 
             sys.stdout.write(str(gene_id))
-            for module in sorted(hash_modules.iterkeys()):
+            for module in sorted(hash_modules.keys()):
                 if module in module_ids:
                     sys.stdout.write("\t1")
                 else:

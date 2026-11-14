@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __author__ = "Julien Tremblay"
 __copyright__ = "Copyright 2022, NRC tools" 

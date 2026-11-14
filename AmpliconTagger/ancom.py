@@ -16,11 +16,8 @@ import numpy as np
 import csv
 import multiprocessing
 import logging
-os.system("taskset -p 0xf %d" % os.getpid())
-sys.stderr.write(str(os.system("taskset -p 0xf %d" % os.getpid())))
 
 def main(arguments):
-    pd.options.mode.chained_assignment = None
     
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-i', '--otu-table', help="OTU table file in tsv format - do not accept .biom files.", type=argparse.FileType('r'), required=True)
@@ -45,6 +42,7 @@ def main(arguments):
     sys.stderr.write("num_threads: " + str(num_threads) + "\n")
    
     # log
+    pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
     fh_log = open(os.path.join(outdir, "ancom_log.txt"), "w")
 
     # for test:
@@ -107,12 +105,14 @@ def main(arguments):
     #p.join()
     
     p = multiprocessing.Pool(num_threads)
-    #os.system('taskset -cp 0-%d %s' % (num_threads, os.getpid()))
 
+    results = []
     for t in tasks:
-        p.apply_async(do_work, t)
+        results.append(p.apply_async(do_work, t))
     p.close()
     p.join()
+    for r in results:
+        r.get()
 
 def do_work(design_control, design_treatment, samples_control, samples_treatment, control, treatment, otu_table2, otu_table, outdir):
     #sys.stderr.write("design_control: " + str(design_control) + "\n")
@@ -126,7 +126,7 @@ def do_work(design_control, design_treatment, samples_control, samples_treatment
                          index=samples_control + samples_treatment
     )
     for col in (samples_control + samples_treatment):
-        otu_table2[col] = otu_table2[col].astype('float',copy=False)
+        otu_table2[col] = otu_table2[col].astype('float')
         
     otu_table_transposed = otu_table2.T
     results = ancom(otu_table_transposed, grouping, significance_test='permutative-anova', permutations=100)
