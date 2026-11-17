@@ -8,3 +8,4 @@ Dockerfile
 **/*.backup*
 **/*.orig
 **/*.tmp
+.github

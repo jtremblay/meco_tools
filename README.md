@@ -29,3 +29,13 @@ docker run --rm meco_tools:$(cat VERSION) bash /opt/meco_tools/tests/smoke_test.
 
 The image also works with Apptainer/Singularity (`PATH` is set in the image, not only by
 the entrypoint) and with arbitrary user IDs (e.g. Nextflow's `docker.runOptions = '-u $(id -u):$(id -g)'`).
+
+Published images (built by `.github/workflows/container.yml`, which runs the smoke test before pushing):
+
+| Tag | Built from | Use |
+|-----|-----------|-----|
+| `ghcr.io/jtremblay/meco_tools:<version>` (e.g. `1.3.4`) | a `v<version>` git tag, which must match `VERSION` | pin this in pipelines |
+| `ghcr.io/jtremblay/meco_tools:latest` | the most recent version tag | |
+| `ghcr.io/jtremblay/meco_tools:main`, `:sha-<commit>` | every push to `main` | testing only; `main` moves |
+
+To release: bump `VERSION`, merge to `main`, then `git tag -a v$(cat VERSION) -m "meco_tools $(cat VERSION)" && git push origin v$(cat VERSION)`.
