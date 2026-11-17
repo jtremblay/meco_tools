@@ -11,14 +11,18 @@ binsFeatureTable <- function(summarized_bins_file, parsed_bins_file, abundance_f
    
    tAbundance <- data.frame(fread(abundance_file, header=T, sep="\t"), check.names=FALSE)
    tParsedBins <- data.frame(fread(parsed_bins_file, header=F, sep="\t"), check.names=FALSE)
-   tSummarizedBins <- data.frame(fread(summarized_bins_file, header=F, sep="\t"), check.names=FALSE)
+   tSummarizedBins <- data.frame(fread(summarized_bins_file, header=T, sep="\t"), check.names=FALSE)
+   # The taxonomy is always the last 7 columns (Kingdom..Species), whatever the number of
+   # quality columns before it (CheckM and CheckM2 report different columns).
+   taxCols = (ncol(tSummarizedBins) - 6):ncol(tSummarizedBins)
+   taxPrefixes = c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
  
    colnames(tAbundance)[1] = "V1" 
    print(head(tAbundance))
    #q();
 
    #print(head(tParsedBins))
-   tSummarizedBins$V19 = gsub("k__", "", tSummarizedBins$V19)
+   tSummarizedBins[[taxCols[1]]] = gsub("k__", "", tSummarizedBins[[taxCols[1]]])
    print("tSummarizedBins")
    print(head(tSummarizedBins))
 
@@ -54,20 +58,16 @@ binsFeatureTable <- function(summarized_bins_file, parsed_bins_file, abundance_f
    #print(df)
       
    # then add taxonomic lineages.
-   tSummarizedBins$V19 = paste0("k__", tSummarizedBins$V19)
-   tSummarizedBins$V20 = paste0("p__", tSummarizedBins$V20)
-   tSummarizedBins$V21 = paste0("c__", tSummarizedBins$V21)
-   tSummarizedBins$V22 = paste0("o__", tSummarizedBins$V22)
-   tSummarizedBins$V23 = paste0("f__", tSummarizedBins$V23)
-   tSummarizedBins$V24 = paste0("g__", tSummarizedBins$V24)
-   tSummarizedBins$V25 = paste0("s__", tSummarizedBins$V25)
+   for(i in seq_along(taxCols)){
+      tSummarizedBins[[taxCols[i]]] = paste0(taxPrefixes[i], tSummarizedBins[[taxCols[i]]])
+   }
   
    #print("tSummarizedBins")
    #print(tSummarizedBins)
 
-   tLink = data.frame(tSummarizedBins$V1)
+   tLink = data.frame(tSummarizedBins[[1]])
    colnames(tLink) = c("#FEATURE_ID")
-   tLink$Lineage = do.call(paste, c(tSummarizedBins[,19:25], sep=";"))
+   tLink$Lineage = do.call(paste, c(tSummarizedBins[,taxCols], sep=";"))
    print("tLink")
    print(tLink)
    #tLink = unique(tLink)

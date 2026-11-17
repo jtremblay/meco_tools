@@ -16,13 +16,13 @@ addReadsCountPerBinsCheckM.pl
 PURPOSE:
 
 INPUT:
---checkm <string>             : CheckM output.
+--checkm <string>             : CheckM (tab table) or CheckM2 (quality_report.tsv) output.
 --parsed_bins <string>        : Parsed bins output. To get contig id.
 --contigs_abundance <string>  : Contigs abundance per sample matrix obtained right before metabat step.
 --contigs_indir <string>      : in directory where are the binned fastas.
 				
 OUTPUT:
-STDOUT                        : CheckM output with number of reads per bins + estimated cov.
+STDOUT                        : CheckM/CheckM2 output with number of reads per bins + estimated cov.
 
 NOTES:
 
@@ -51,29 +51,32 @@ if ($help) { print $usage; exit; }
 ## MAIN
 my %hash;
 
-# CheckM
+# CheckM or CheckM2 quality table. The header is taken from the file itself, so any column
+# layout works: CheckM's tab table (first column "Bin Id") or CheckM2's quality_report.tsv
+# (first column "Name"). Column names are made shell/R friendly: spaces become underscores
+# and a leading "#" becomes "no" ("# genomes" -> "no_genomes").
 my $checkm_header = "";
 open(IN, "<".$checkm) or die "Can't open $checkm\n";
 while(<IN>){
    chomp;
-   
-   if($_ =~ m/Bin Id/){
-       #my @row = split(/\s+/, $_); 
-       #shift(@row);  
-       #$checkm_header = join("\t", @row);
-       #Bin Id  Marker lineage  # genomes   # markers   # marker sets   0   1   2   3   4   5+  Completeness    Contamination   Strain heterogeneity
-       $checkm_header="Bin_Id\tMarker_lineage\tno_genomes\tUID\tno_markers\tno_marker_sets\t0\t1\t2\t3\t4\t5+\tCompleteness\tContamination\tStrain_heterogeneity";
-       #$checkm_header = $_;
-       next;
-   }
-   #if($_ =~ m/--------------/){next;}
+   s/\r$//;
+   next if($_ =~ m/^\s*$/);
 
    my @row = split(/\t/, $_);
-   #print STDERR join("\t", @row)."\n";
-   my $bin_id = $row[0];
-   shift(@row);
-   my $line = join("\t", @row);
-   $hash{$bin_id} = $line;
+   if($checkm_header eq ""){
+       shift(@row);
+       foreach my $col (@row){
+           $col =~ s/^#\s*/no_/;
+           $col =~ s/\s+/_/g;
+       }
+       $checkm_header = join("\t", "Bin_Id", @row);
+       next;
+   }
+
+   # CheckM2 reports bins without their file extension; strip one anyway in case it is kept.
+   my $bin_id = shift(@row);
+   $bin_id =~ s/\.(fa|fna|fasta)$//;
+   $hash{$bin_id} = join("\t", @row);
 }
 close(IN);
 #print STDERR Dumper(\%hash);
