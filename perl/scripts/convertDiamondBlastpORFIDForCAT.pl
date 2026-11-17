@@ -63,33 +63,16 @@ while(<IN>){
     my @field = split(/;/, $row[8]);
     my $curr_gene_id = $field[0];
 
-    if(eof){
+    # Prodigal numbers the ORFs of a contig 1..n in gff order: restart the counter at each new contig.
+    # (The last line of the file used to be handled separately and was misnumbered when it was the
+    # only gene of its contig.)
+    if($curr_contig_id eq $last_contig_id){
         $i++;
-        #print STDERR $curr_contig_id."_".$i."\t".$curr_gene_id."\n"; 
-        $hash{$curr_gene_id} = $curr_contig_id."_".$i;
-        
-    }elsif($curr_contig_id eq $last_contig_id){
-        #continue
-        $i++;
-        #print STDERR $curr_contig_id."_".$i."\t".$curr_gene_id."\n"; 
-        $hash{$curr_gene_id} = $curr_contig_id."_".$i;
-
-    }elsif($curr_contig_id ne $last_contig_id){
-        # mean new contig.
-        # 1st: complete last contig
-        if($i == 1){
-            #print STDERR $curr_contig_id."_".$i."\t".$curr_gene_id."\n";
-            $hash{$curr_gene_id} = $curr_contig_id."_".$i;
-        }else{
-            $i = 1;
-            #print STDERR $curr_contig_id."_".$i."\t".$curr_gene_id."\n";
-            $hash{$curr_gene_id} = $curr_contig_id."_".$i;
-        } 
-
-        # 2nd start new one.
+    }else{
+        $i = 1;
         $last_contig_id = $curr_contig_id;
-        $last_gene_id = $curr_gene_id;
     }
+    $hash{$curr_gene_id} = $curr_contig_id."_".$i;
 }
 close(IN);
 

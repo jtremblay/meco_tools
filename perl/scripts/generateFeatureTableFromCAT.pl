@@ -74,7 +74,9 @@ while(<IN>){
 
         #print STDERR "Parsing $match\n";
         foreach my $el (@row2){
-            if($el =~ m/\(superkingdom\)/){
+            # NCBI taxonomy (2025 and later) names this rank 'domain' for cellular organisms and
+            # 'acellular root' for viruses; older taxonomies use 'superkingdom'.
+            if($el =~ m/\((superkingdom|domain|acellular root)\)/){
                 $superkingdom = "k__".(split /\(/, $el)[0];
                 chop($superkingdom);
             }elsif($el =~ m/\(kingdom\)/){
