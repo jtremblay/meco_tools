@@ -141,7 +141,8 @@ for my $fasta (@infiles){
 
    # Loop to keep only $n most abundant;
    my $k=1;
-   my @keys = sort { $hash_fh{$b}{abundance} <=> $hash_fh{$a}{abundance} } keys(%hash_fh);
+   # Ties are broken by name: Perl hash order is random, so without it the kept orders changed between runs.
+   my @keys = sort { $hash_fh{$b}{abundance} <=> $hash_fh{$a}{abundance} || $a cmp $b } keys(%hash_fh);
    foreach my $key ( @keys ) {
        #print STDERR $key."\t".$hash_fh{$key}{abundance}."\n";
       if($k <= $n){

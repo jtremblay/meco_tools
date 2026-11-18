@@ -178,7 +178,8 @@ my %tax2;
 foreach my $bin_id (keys %tax) {
    my $max = 0;
    my $min = 999999;
-   foreach my $lineage (keys %{ $tax{$bin_id} }) {
+   # Sorted so that ties between lineages are resolved the same way on every run.
+   foreach my $lineage (sort keys %{ $tax{$bin_id} }) {
    
       my @lineage = split(/\t/, $lineage);
 
